@@ -96,7 +96,7 @@ const construirAsientos = (
 
     return [
         { ...base, cajaId: form.cajaId, cuentaId: null, naturaleza: "Débito", forma_pago: 'Efectivo', cajaMovimiento: form.cajaId, },
-        { ...base, cajaId: null, cuentaId: Number(cuenta.id), naturaleza: "Crédito", forma_pago: 'Lanzamiento Bancario', cajaMovimiento: form.cajaId, },
+        { ...base, cajaId: null, cuentaId: Number(cuenta.id), naturaleza: "Crédito", forma_pago: 'Saque Bancario', cajaMovimiento: form.cajaId, },
     ];
 };
 
