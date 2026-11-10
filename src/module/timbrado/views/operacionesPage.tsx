@@ -1,4 +1,4 @@
-import { List, Move, PlusCircle } from "lucide-react";
+/* import { List, Move, PlusCircle } from "lucide-react";
 import PageBanner from "../../../components/utils/Banner";
 import { useOperacion } from "../hooks/useOperacion";
 import { useEffect, useState } from "react";
@@ -30,7 +30,7 @@ const OperacionesPage = () => {
     }
 
 
-    /* console.log(operacionSeleccionada); */
+   
 
 
     return (
@@ -83,4 +83,4 @@ const OperacionesPage = () => {
         </>
     );
 }
-export default OperacionesPage;
+export default OperacionesPage; */

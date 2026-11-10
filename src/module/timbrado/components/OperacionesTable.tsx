@@ -1,4 +1,4 @@
-import { List, Pen } from "lucide-react";
+/* import { List, Pen } from "lucide-react";
 import DataTable from "../../../components/utils/DataTable";
 import type { InterfaceOperacionBaja } from "../interfaces/InterfaceOperacion";
 
@@ -42,9 +42,9 @@ const OperacionesTable = ({ operaciones, obtenerOperacion, activeBar }: Interfac
                                                     obtenerOperacion(e.id)
                                                     activeBar('registro')
                                                 }}
-                                                /* disabled={!puedeEditarCaja} */
+                                               
                                                 className="p-2 cursor-pointer text-[#144144] hover:bg-[#359bac]/20 rounded-xl transition-colors"
-                                                /* data-tooltip={`${!puedeEditarCaja ? 'No tienes privilegios necesarios' : 'Editar Caja'}`} */>
+                                                >
                                                 <Pen size={18} />
                                             </button>
 
@@ -63,4 +63,4 @@ const OperacionesTable = ({ operaciones, obtenerOperacion, activeBar }: Interfac
         </>
     );
 }
-export default OperacionesTable;
+export default OperacionesTable; */

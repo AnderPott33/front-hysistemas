@@ -1,6 +1,5 @@
-import { useState } from "react";
+/* import { useState } from "react";
 import { useAuth } from "../../../context/AuthContext"
-import type { InterfaceTimbrado } from "../interfaces/InterfaceTimbrado";
 import { crearActualizarTimbrado, obtenerTimbradoId, obtenerTimbrados } from "../services/timbradoService";
 
 export const useTimbrado = () => {
@@ -56,4 +55,4 @@ export const useTimbrado = () => {
     }
 
     return { timbrados, cargarTimbrados, timbradoSeleccionado, agregarActualizarTimbradoFn, cargarTimbradoId, loading };
-}
+} */

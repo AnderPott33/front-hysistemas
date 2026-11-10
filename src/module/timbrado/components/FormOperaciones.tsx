@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+/* import { useEffect, useState } from "react";
 import { Plus, RefreshCcw, Trash2, CircleX } from "lucide-react";
 import InputERP, { type SearchOption } from "../../../components/utils/InputERP";
 
@@ -88,9 +88,7 @@ const FormOperaciones: React.FC<FormOperacionesProps> = ({
     const puedeAbrir = tienePermiso("agregar_caja");
 
     // ✅ Si no hay operación seleccionada, mostrar Loading
-    /* if (!operacionSeleccionada && formData.id === 0) {
-        return <Loading />;
-    } */
+  
 
     return (
         <>
@@ -106,7 +104,7 @@ const FormOperaciones: React.FC<FormOperacionesProps> = ({
                 <div className="rounded-b-xl bg-white p-8 shadow-lg">
 
                     <div className="grid grid-cols-12 gap-3">
-                        {/* ID */}
+                        
                         <div className="grid col-span-6 gap-2">
                             <label className="text-sm font-medium text-slate-700">ID</label>
                             <div className={`grid gap-2 ${formData.creado_en ? 'grid-cols-2' : 'grid-cols-1'}`}>
@@ -395,7 +393,7 @@ const FormOperaciones: React.FC<FormOperacionesProps> = ({
                     </div>
                 </div>
 
-                {/* ACCIONES */}
+                
                 <div className="flex gap-2 justify-end items-center flex-wrap pt-4">
                     <button
                         type="submit"
@@ -431,4 +429,4 @@ const FormOperaciones: React.FC<FormOperacionesProps> = ({
     );
 };
 
-export default FormOperaciones;
+export default FormOperaciones; */

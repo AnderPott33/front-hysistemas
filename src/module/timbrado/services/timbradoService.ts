@@ -1,4 +1,4 @@
-import axios from "axios";
+/* import axios from "axios";
 import type { InterfaceTimbrado } from "../interfaces/InterfaceTimbrado";
 
 const API = import.meta.env.VITE_API_URL;
@@ -40,3 +40,4 @@ export const obtenerTimbradoId = async (token: string, id: number) => {
         throw error;
     }
 };
+ */
