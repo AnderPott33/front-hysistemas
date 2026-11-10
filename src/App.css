@@ -1,0 +1,113 @@
+  @import "tailwindcss";
+
+ @font-face {
+  font-family: 'Quicksand';
+  src: url('./assets/fonts/Quicksand-Regular.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: normal;
+}
+  @theme {
+    --background-image-rainbow: linear-gradient(
+      90deg,
+      #ff0000,
+      #ff7f00,
+      #ffff00,
+      #00ff00,
+      #00bfff,
+      #0000ff,
+      #8b00ff
+    );
+  }
+  /* Color base configurable */
+  :root {
+    --color-base: #9942f0;
+  }
+
+  /* Paleta de colores de Tailwind */
+  @theme {
+    --color-mi-cuarta: color-mix(
+      in srgb,
+      var(--color-base) 25%,
+      black
+    );
+
+    --color-mi-segunda: color-mix(
+      in srgb,
+      var(--color-base) 60%,
+      black
+    );
+
+    --color-mi-tercera: color-mix(
+      in srgb,
+      var(--color-base) 82%,
+      black
+    );
+
+    --color-mi-primera: var(--color-base);
+
+    --font-sans: 'Quicksand', sans-serif;
+
+    --background-image-mi-gradient: linear-gradient(
+      to bottom right,
+      var(--color-mi-cuarta),
+      var(--color-mi-tercera),
+      var(--color-mi-primera)
+    );
+  }
+  /* 
+  colores originales
+  --color-mi-cuarta: #290c45;  
+      --color-mi-segunda: #4d1386;
+      --color-mi-tercera: #7517d3;
+      --color-mi-primera: #9942f0;
+      */
+  /* html, body {
+    font-family: 'Saira', system-ui, sans-serif;
+  } */
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  button{
+    outline: none;
+  }
+
+  button:hover {
+    scale: 0.95;
+    cursor: pointer;
+  }
+
+  button:disabled {
+    scale: 1;
+    opacity: 60%;
+    cursor: no-drop;
+  }
+
+  /* Evita el fondo azul del autocompletado del navegador en los inputs del ERP */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+    box-shadow: 0 0 0 1000px #ffffff inset !important;
+    -webkit-text-fill-color: #290c45 !important;
+    caret-color: #290c45;
+    border-radius: inherit;
+    transition: background-color 9999s ease-in-out 0s;
+  }
+
+  /* Autofill del navegador: mantiene el fondo transparente para que se vea
+    el contenedor del InputERP (bg-white, borde y rounded-2xl) */
+  /* Autocompletado del navegador en inputs del ERP.
+    Mantiene el fondo transparente (lo pinta el contenedor del InputERP)
+    y fuerza el color del texto a mi-cuarta. */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-text-fill-color: #290c45;
+    caret-color: #290c45;
+    transition: background-color 600000s 0s, color 600000s 0s;
+  }

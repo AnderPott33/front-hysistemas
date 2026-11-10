@@ -1,0 +1,56 @@
+# ============================================================
+# .gitignore - frontend Owl-Soft ERP (React + Vite + TypeScript + Tailwind)
+# ============================================================
+
+# --- Logs ---
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# --- Dependencias (package-lock.json SÍ se versiona) ---
+node_modules
+
+# --- Build ---
+dist
+dist-ssr
+build
+out
+*.tsbuildinfo
+
+# --- Variables de entorno (NUNCA subir) ---
+.env
+.env.*
+!.env.example
+*.local
+*.pem
+*.key
+
+# --- Caché de herramientas ---
+.eslintcache
+.vite
+.cache
+.parcel-cache
+
+# --- Cobertura de tests ---
+coverage
+.nyc_output
+
+# --- Editor directories and files ---
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.sublime-workspace
+
+# --- Sistema operativo ---
+.DS_Store
+Thumbs.db
+desktop.ini
