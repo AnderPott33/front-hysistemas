@@ -94,7 +94,7 @@ export const buscarRuc = async (ruc: string): Promise<InterfaceRucSet> => {
     const rucLimpio = normalizarRuc(ruc);
     if (!rucLimpio) throw new Error("Ingrese un RUC válido");
 
-    const result = await axios.get<InterfaceRucSet>(`/ruc-set/${rucLimpio}`);
+    const result = await axios.get<InterfaceRucSet>(`${API}/api/ruc/${rucLimpio}`);
     return result.data;
 };
 
