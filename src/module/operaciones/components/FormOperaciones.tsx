@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+/* import { useEffect, useState, type ReactNode } from "react";
 import { Plus, Power, PowerOff, RefreshCcw, Trash2 } from "lucide-react";
 import InputERP, { type SearchOption } from "../../../components/utils/InputERP";
 import { showAlert } from "../../../components/utils/Procesando";
@@ -170,7 +170,7 @@ const FormOperaciones: React.FC<FormOperacionesProps> = ({
 
     return (
         <form onSubmit={handleSubmit} className="w-full space-y-4">
-            {/* Header */}
+            
             <div className="flex flex-wrap justify-between items-center gap-4 bg-white rounded-3xl border border-mi-primera/15 shadow-lg shadow-mi-cuarta/10 p-4">
                 <div className="flex items-center gap-3">
                     <div className="flex items-center justify-center w-11 h-11 rounded-2xl bg-mi-gradient shadow-md shadow-mi-tercera/30">
@@ -185,11 +185,10 @@ const FormOperaciones: React.FC<FormOperacionesProps> = ({
                 </div>
             </div>
 
-            {/* Campos */}
             <div className="rounded-3xl bg-white border border-mi-primera/15 shadow-lg shadow-mi-cuarta/10 p-6 lg:p-8">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
 
-                    {/* ID y descripción */}
+                   
                     <Campo label="" className="md:col-span-6">
                         <div className={`grid gap-2 ${formData.creado_en ? 'grid-cols-2' : 'grid-cols-1'}`}>
                             <InputERP
@@ -203,7 +202,7 @@ const FormOperaciones: React.FC<FormOperacionesProps> = ({
                                 searchMinChars={1}
                                 showSearch={false}
                                 onEnterPress={buscarYCargar}
-                                /* onBlur={buscarYCargar} */
+                            
                                 placeholder="Ingresa ID o descripción..."
                             />
                             {formData.creado_en && (
@@ -225,7 +224,7 @@ const FormOperaciones: React.FC<FormOperacionesProps> = ({
                         />
                     </Campo>
 
-                    {/* Informaciones fundamentales */}
+                    
                     <Seccion titulo="Informaciones Fundamentales" />
 
                     <Campo label="" className="md:col-span-3">
@@ -295,7 +294,7 @@ const FormOperaciones: React.FC<FormOperacionesProps> = ({
                         </button>
                     </div>
 
-                    {/* Información legal */}
+                
                     <Seccion titulo="Información Legal" />
 
                     <div className="md:col-span-4 flex flex-col justify-end">
@@ -338,7 +337,7 @@ const FormOperaciones: React.FC<FormOperacionesProps> = ({
                         </CampoCheck>
                     </div>
 
-                    {/* Stock y almacén */}
+                   
                     <Seccion titulo="Stock y Almacén" />
 
                     <div className="md:col-span-3 flex flex-col justify-end">
@@ -397,7 +396,7 @@ const FormOperaciones: React.FC<FormOperacionesProps> = ({
                         />
                     </Campo>
 
-                    {/* Financiero categoría / cuenta */}
+                  
                     <Seccion titulo="Financiero Categoría / Cuenta" />
 
                     <div className="md:col-span-4 flex flex-col justify-end">
@@ -454,7 +453,7 @@ const FormOperaciones: React.FC<FormOperacionesProps> = ({
                 </div>
             </div>
 
-            {/* Acciones */}
+            
             <div className="flex gap-2 justify-end items-center flex-wrap">
                 <button
                     type="submit"
@@ -490,4 +489,4 @@ const FormOperaciones: React.FC<FormOperacionesProps> = ({
     );
 };
 
-export default FormOperaciones;
+export default FormOperaciones; */

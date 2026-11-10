@@ -1,11 +1,11 @@
-/* import axios from "axios";
-import type { InterfaceTimbrado } from "../interfaces/InterfaceTimbrado";
+import axios from "axios";
+/* import type { InterfaceTimbrado } from "../interfaces/InterfaceTimbrado"; */
 
 const API = import.meta.env.VITE_API_URL;
 
 // ─── Timbrado ───────────────────────────────────────────────────────────────
 
-export const crearActualizarTimbrado = async (timbrado: InterfaceTimbrado, token: string) => {
+export const crearActualizarTimbrado = async (timbrado: string, token: string) => {
     try {
         const result = await axios.post(`${API}/api/timbrado`, timbrado, {
             headers: { Authorization: `Bearer ${token}` }
@@ -40,4 +40,3 @@ export const obtenerTimbradoId = async (token: string, id: number) => {
         throw error;
     }
 };
- */

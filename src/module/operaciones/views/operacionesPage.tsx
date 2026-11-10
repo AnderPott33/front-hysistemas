@@ -4,7 +4,7 @@ import { useOperacion } from "../hooks/useOperacion";
 import { useEffect, useState } from "react";
 import ActionBanner from "../../../components/utils/ActionBanner";
 import OperacionesTable from "../components/OperacionesTable";
-import FormOperaciones from "../components/FormOperaciones";
+/* import FormOperaciones from "../components/FormOperaciones"; */
 import type { InterfaceOperacionBaja } from "../interfaces/InterfaceOperacion";
 import GlobalTooltip from "../../../components/utils/GlobalTooltip";
 
@@ -55,13 +55,13 @@ const OperacionesPage = () => {
                                     content: (
                                         <>
                                             <div className="py-2">
-                                                <FormOperaciones
+                                                {/* <FormOperaciones
                                                     operacionSeleccionada={operacionSeleccionada}
                                                     guardarOperacion={guardarOperacion}
                                                     activeBar={activarBar}
                                                     operaciones={operaciones}
                                                     cargarOperacionId={cargarOperacionId}
-                                                />
+                                                /> */}
                                             </div>
                                         </>
                                     )
