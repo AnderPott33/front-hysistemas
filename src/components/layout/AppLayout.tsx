@@ -241,7 +241,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
 
       <aside
         ref={popoverRef}
-        className={`fixed top-20 left-3 bottom-3 w-16 rounded-3xl bg-white/95 backdrop-blur-md border border-mi-primera/15 shadow-xl shadow-mi-cuarta/10 flex flex-col items-center py-3 z-30 transition-transform duration-300 ease-out
+        className={`fixed top-20 left-3 bottom-3 w-16 rounded-3xl bg-white/95 backdrop-blur-md border border-mi-primera/15 shadow-xl shadow-mi-cuarta/10 flex flex-col items-center py-3 z-50 transition-transform duration-300 ease-out
           ${isMobileOpen ? 'translate-x-0' : '-translate-x-[150%] lg:translate-x-0'}
         `}
       >
