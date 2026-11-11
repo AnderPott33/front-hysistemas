@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../../../context/AuthContext";
 import { useCaja } from "../../../context/CajaContext";
@@ -25,6 +25,41 @@ import ModalGeneral from "../../../components/utils/ModalGeneral";
 import InputERP from "../../../components/utils/InputERP";
 import Loading from "../../../components/utils/Loading";
 import { useNavigate } from "react-router-dom";
+
+/* ------------------------------------------------------------------ */
+/* Overlay estable: evita destellos en operaciones cortas              */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Devuelve true solo si `activo` dura más de `retardo` ms,
+ * y lo mantiene visible al menos `minimo` ms para evitar parpadeos.
+ */
+const useOverlayEstable = (activo: boolean, retardo = 250, minimo = 400): boolean => {
+    const [visible, setVisible] = useState(false);
+    const desde = useRef<number | null>(null);
+
+    useEffect(() => {
+        if (activo) {
+            const t = setTimeout(() => {
+                desde.current = Date.now();
+                setVisible(true);
+            }, retardo);
+            return () => clearTimeout(t);
+        }
+
+        // Si nunca llegó a mostrarse, no hay nada que ocultar
+        if (desde.current === null) return;
+
+        const restante = Math.max(0, minimo - (Date.now() - desde.current));
+        const t = setTimeout(() => {
+            desde.current = null;
+            setVisible(false);
+        }, restante);
+        return () => clearTimeout(t);
+    }, [activo, retardo, minimo]);
+
+    return visible;
+};
 
 /* ------------------------------------------------------------------ */
 /* Utilidades puras (mismas reglas que FormBaja)                       */
@@ -80,19 +115,26 @@ const FormFinanciero = () => {
     const cargando =
         loadingFinanciero || loadingEmpresa || loadingMonedas || loadingCuentas || loadingCategorias;
 
+    // Overlay visual estabilizado: no aparece en operaciones cortas ni parpadea al cerrarse
+    const mostrarOverlay = useOverlayEstable(cargando);
+
     const monedaBase: InterfaceMoneda | null = monedasA.find((e: InterfaceMoneda) => e.id === empresa?.moneda_base) || null;
     const operacionesBaja: InterfaceOperacionBaja[] = operaciones.filter((e: InterfaceOperacionBaja) => e.modulo === 'Financiero');
 
+    // Las cargas corren en paralelo para que el loading no baje a false entre una y otra
     const cargarDatos = async () => {
-        await cargarEmpresa();
-        await cargarMonedasActivas();
-        await cargarCuentas();
-        await cargarOperaciones();
-        await cargarTiposCambio();
-        await cargarPersonas();
-        await cargarFinancieros();
-        await cargarSubcategorias();
+        await Promise.all([
+            cargarEmpresa(),
+            cargarMonedasActivas(),
+            cargarCuentas(),
+            cargarOperaciones(),
+            cargarTiposCambio(),
+            cargarPersonas(),
+            cargarFinancieros(),
+            cargarSubcategorias(),
+        ]);
     };
+
     useEffect(() => {
         cargarDatos();
     }, []);
@@ -412,7 +454,7 @@ const FormFinanciero = () => {
 
     return (
         <>
-            {cargando && <Loading />}
+            {mostrarOverlay && <Loading />}
 
             <div className="flex gap-3 items-stretch px-2 pb-2">
                 <div className="shrink-0">
