@@ -22,124 +22,111 @@ export const useCajas = () => {
     const [cajaSeleccionada, setCajaSeleccionada] = useState<InterfaceCajas | null>(null);
     const [cajaLogueada, setCajaLogueada] = useState<InterfaceCajas | null>(null);
     const [saldos, setSaldos] = useState<any[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
+
+    // Contador de operaciones en curso: loading es true mientras haya alguna pendiente
+    const [operacionesPendientes, setOperacionesPendientes] = useState(0);
+    const loading = operacionesPendientes > 0;
+
+    // Envuelve cualquier operación async y controla el contador de forma segura
+    const conLoading = async <T,>(operacion: () => Promise<T>): Promise<T> => {
+        setOperacionesPendientes((n) => n + 1);
+        try {
+            return await operacion();
+        } finally {
+            setOperacionesPendientes((n) => n - 1);
+        }
+    };
 
     const cargarCajas = async () => {
         if (!token) return;
         try {
-            setLoading(true);
-            const data = await obtenerCajas(token);
+            const data = await conLoading(() => obtenerCajas(token));
             setCajas(data || []);
         } catch (error) {
             console.error("Error al cargar cajas:", error);
-        } finally {
-            setLoading(false);
         }
     };
 
     const cargarCajaPorId = async (id: number) => {
         if (!token) return;
         try {
-            setLoading(true);
-            const data = await obtenerCajaId(token, id);
-            setCajaSeleccionada(data || []);
+            const data = await conLoading(() => obtenerCajaId(token, id));
+            setCajaSeleccionada(data ?? null);
         } catch (error) {
             console.error(`Error al cargar caja ${id}:`, error);
-        } finally {
-            setLoading(false);
         }
     };
 
     const guardarCaja = async (caja: InterfaceCajas) => {
         if (!token) return;
         try {
-            setLoading(true);
-            let data;
+            const data = await conLoading(() =>
+                caja.id ? actualizarCaja(token, caja) : crearCaja(token, caja)
+            );
 
-            if (caja.id) {
-                data = await actualizarCaja(token, caja);
-            } else {
-                data = await crearCaja(token, caja);
-            }
-
-            await cargarCajas();
             setCajaSeleccionada(data);
-            /* console.log(data); */
-            loguearCajaUsuario(data.id)
+            await cargarCajas();
+            await loguearCajaUsuario(data.id); // ahora se espera y sus errores se capturan
+
             return data;
         } catch (error) {
             console.error("Error al guardar caja:", error);
             throw error;
-        } finally {
-            setLoading(false);
         }
     };
 
     const cerrarCajaId = async (id: number) => {
         if (!token) return;
         try {
-            setLoading(true);
-            const data = await cerrarCaja(token, id);
-            await cargarCajas();
+            const data = await conLoading(() => cerrarCaja(token, id));
             if (cajaSeleccionada?.id === id) {
                 setCajaSeleccionada(data);
             }
-            // Recargar el contexto global de CajaContext
+            await cargarCajas();
             await recargarCaja();
             return data;
         } catch (error) {
             console.error("Error al cerrar caja:", error);
             throw error;
-        } finally {
-            setLoading(false);
         }
     };
 
     const reabrirCajaId = async (id: number) => {
         if (!token) return;
         try {
-            setLoading(true);
-            const data = await reabrirCaja(token, id);
-            await cargarCajas();
+            const data = await conLoading(() => reabrirCaja(token, id));
             if (cajaSeleccionada?.id === id) {
                 setCajaSeleccionada(data);
             }
-            // Recargar el contexto global de CajaContext
+            await cargarCajas();
             await recargarCaja();
             return data;
         } catch (error) {
             console.error("Error al reabrir caja:", error);
             throw error;
-        } finally {
-            setLoading(false);
         }
     };
 
     const cargarCajaLogueada = async () => {
         if (!token) return;
         try {
-            setLoading(true);
-            const data = await obtenerCajaLogueada(token);
+            const data = await conLoading(() => obtenerCajaLogueada(token));
             setCajaLogueada(data);
         } catch (error) {
             console.error("Error al cargar caja logueada:", error);
-        } finally {
-            setLoading(false);
         }
     };
 
     const loguearCajaUsuario = async (cajaId: number | null) => {
         if (!token) return;
         try {
-            const data = await loguearCaja(token, cajaId);
+            const data = await conLoading(() => loguearCaja(token, cajaId));
             await cargarCajaLogueada();
-            // Recargar el contexto global de CajaContext
             await recargarCaja();
-            if (cajaId) {
-                showAlert(`Caja ${cajaId} logueada`, 'success')
-            }else{
-                showAlert(`Caja deslogueada`, 'success')
-            }
+            showAlert(
+                cajaId ? `Caja ${cajaId} logueada` : `Caja deslogueada`,
+                "success"
+            );
             return data;
         } catch (error) {
             console.error("Error al loguear caja:", error);
