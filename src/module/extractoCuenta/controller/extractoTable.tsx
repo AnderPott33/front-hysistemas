@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import axios from "axios";
 import { Check, FileText, Printer, Receipt, TrendingDown, TrendingUp } from "lucide-react";
 import DataTable from "../../../components/utils/DataTable";
-import { formatarDataHora, formatarMoeda } from "../../../components/utils/Formatadores";
+import { formatarData, formatarDataHora, formatarMoeda } from "../../../components/utils/Formatadores";
 import InputERP from "../../../components/utils/InputERP";
 import ModalGeneral from "../../../components/utils/ModalGeneral";
 import { showAlert } from "../../../components/utils/Procesando";
@@ -375,7 +375,7 @@ const ExtractoTable = ({
                         accessor: "fecha",
                         width: "90px",
                         align: "center",
-                        cell: (e) => (e.fecha ? formatarDataHora(e.fecha) : ""),
+                        cell: (e) => (e.fecha ? formatarData(e.fecha) : ""),
                     },
                     {
                         header: "Descripción",

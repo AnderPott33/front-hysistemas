@@ -18,13 +18,13 @@ export default defineConfig({
       usePolling: true,
       interval: 100,
     },
-    proxy: {
+    /* proxy: {
       '/ruc-set': {
         target: 'https://ruc.sun.com.py',
         changeOrigin: true,
         secure: true,
         rewrite: (path) => path.replace(/^\/ruc-set/, '/api/ruc'),
-      },
-    },
+      }, 
+    },*/
   },
 })
