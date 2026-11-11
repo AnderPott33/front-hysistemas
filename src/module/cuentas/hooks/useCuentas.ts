@@ -9,18 +9,27 @@ export const useCuentas = () => {
 
     const [cuentas, setCuentas] = useState<InterfaceCuenta[]>([]);
     const [cuentaSeleccionada, setCuentaSeleccionada] = useState<InterfaceCuenta | null>(null);
-    const [loading, setLoading] = useState<boolean>(false);
+
+    // Contador de operaciones en curso: loading es true mientras quede alguna pendiente
+    const [operacionesPendientes, setOperacionesPendientes] = useState(0);
+    const loading = operacionesPendientes > 0;
+
+    const conLoading = async <T,>(operacion: () => Promise<T>): Promise<T> => {
+        setOperacionesPendientes((n) => n + 1);
+        try {
+            return await operacion();
+        } finally {
+            setOperacionesPendientes((n) => n - 1);
+        }
+    };
 
     const cargarCuentas = async () => {
         if (!token) return;
         try {
-            setLoading(true);
-            const data = await obtenerCuentas(token);
+            const data = await conLoading(() => obtenerCuentas(token));
             setCuentas(data);
         } catch (error) {
             console.error("Error al cargar cuentas:", error);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -31,29 +40,26 @@ export const useCuentas = () => {
             return;
         }
         try {
-            setLoading(true);
-            const data = await obtenerCuentaId(token, id);
+            const data = await conLoading(() => obtenerCuentaId(token, id));
             setCuentaSeleccionada(data);
         } catch (error) {
             console.error(`Error al cargar la cuenta ${id}:`, error);
-        } finally {
-            setLoading(false);
         }
     };
 
     const guardarCuenta = async (cuenta: InterfaceCuentaForm) => {
         if (!token) return;
         try {
-            setLoading(true);
-            const data = await actualizarCuenta(token, cuenta);
-            await cargarCuentas();
+            const data = await conLoading(async () => {
+                const respuesta = await actualizarCuenta(token, cuenta);
+                await cargarCuentas();
+                return respuesta;
+            });
             showAlert(data.message, 'success');
             return data;
         } catch (error) {
             console.error("Error al crear/actualizar cuenta:", error);
             showAlert('Error al crear/actualizar cuenta', 'error');
-        } finally {
-            setLoading(false);
         }
     };
 

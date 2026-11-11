@@ -9,6 +9,7 @@ const SENTINEL_COLOR = '#010203';
 const LOADER_CLOSE_DELAY_MS = 2500;
 const TOAST_TIMEOUT_MS = 3000;
 const DEFAULT_TOAST_TYPE = 'success';
+const TOAST_WAVE_HEIGHT = 12;
 
 const COLOR_ERROR = '#dc2626';
 const COLOR_ERROR_BORDER = '#f87171';
@@ -167,26 +168,48 @@ const modalBase = (MI: Paleta) => ({
     },
 });
 
-/** Aplica estilos personalizados al icono del toast */
+/** Misma forma de onda que usa ModalGeneral, con viewBox igual a la altura renderizada */
+const wavePath = (h: number): string => {
+    const amp = h * 0.6;
+    return `M0,${amp} C360,${h * 1.2} 1080,${-h * 0.2} 1440,${amp} L1440,${h} L0,${h} Z`;
+};
+
+/**
+ * Decoración del toast: dos círculos y una onda inferior, igual que el modal.
+ * Todo va con z-index: -1 dentro de un contexto de apilamiento aislado,
+ * así queda detrás del texto, el ícono y el botón de cerrar.
+ */
+const toastDecorHtml = (h: number): string => `
+    <div aria-hidden="true" style="position:absolute;top:-1.25rem;right:-1.25rem;width:4rem;height:4rem;border-radius:9999px;background:rgba(255,255,255,0.1);pointer-events:none;z-index:-1;"></div>
+    <div aria-hidden="true" style="position:absolute;top:0.4rem;right:3.5rem;width:2rem;height:2rem;border-radius:9999px;background:rgba(255,255,255,0.1);pointer-events:none;z-index:-1;"></div>
+    <svg viewBox="0 0 1440 ${h}" preserveAspectRatio="none" aria-hidden="true"
+         style="position:absolute;left:0;bottom:0;width:100%;height:${h}px;pointer-events:none;z-index:-1;">
+        <path fill="rgba(255,255,255,0.14)" d="${wavePath(h)}" />
+    </svg>
+`;
+
+/** Icono del toast: tamaño visual reducido, sin tocar el área de lectura */
 const styleToastIcon = (iconContainer: HTMLElement, textColor: string): void => {
     Object.assign(iconContainer.style, {
         border: 'none',
         background: alpha(COLOR_WHITE, 0.15),
         boxShadow: 'none',
         color: textColor,
-        width: '2.5rem',
-        height: '2.5rem',
-        borderRadius: '14px',
-        padding: '0.5rem',
+        width: '2rem',
+        height: '2rem',
+        minWidth: '2rem',
+        borderRadius: '10px',
+        padding: '0.35rem',
+        margin: '0',
     });
 
     const svg = iconContainer.querySelector('svg');
     if (svg) {
-        svg.style.filter = 'drop-shadow(0 0 3px rgba(255, 255, 255, 0.5))';
+        svg.style.filter = 'drop-shadow(0 0 2px rgba(255, 255, 255, 0.5))';
     }
 };
 
-/** Aplica estilos personalizados al toast completo */
+/** Toast compacto: ícono a la izquierda y texto alineado a la izquierda, centrado verticalmente */
 const styleToast = (
     toast: HTMLElement,
     borderColor: string,
@@ -196,31 +219,56 @@ const styleToast = (
 ): void => {
     Object.assign(toast.style, {
         border: `1px solid ${borderColor}`,
-        boxShadow: `0 12px 32px ${alpha(MI.cuarta, 0.35)}, 0 0 18px ${alpha(bgColor, 0.33)}`,
+        boxShadow: `0 6px 16px ${alpha(MI.cuarta, 0.3)}, 0 0 10px ${alpha(bgColor, 0.25)}`,
         backdropFilter: 'blur(10px)',
-        borderRadius: '20px',
+        borderRadius: '14px',
+        overflow: 'hidden',
+        isolation: 'isolate',
+        position: 'relative',
+        minWidth: '14rem',
+        maxWidth: '22rem',
+        alignItems: 'center',
     });
+
+    toast.insertAdjacentHTML('afterbegin', toastDecorHtml(TOAST_WAVE_HEIGHT));
 
     const iconContainer = toast.querySelector<HTMLElement>('.swal2-icon');
     if (iconContainer) styleToastIcon(iconContainer, textColor);
 
+    // El título se vuelve un contenedor flex con la altura del ícono,
+    // así el texto se centra verticalmente sin depender del margen por defecto de SweetAlert
     const titleElement = toast.querySelector<HTMLElement>('.swal2-title');
     if (titleElement) {
         Object.assign(titleElement.style, {
-            fontSize: '1rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            minHeight: '2rem',
+            fontSize: '0.875rem',
             fontWeight: '600',
-            marginLeft: '0.5rem',
+            lineHeight: '1.3',
+            margin: '0 0.5rem',
+            padding: '0',
+            wordBreak: 'break-word',
+            textAlign: 'left',
+            flex: '1',
         });
     }
 
+    // El botón conserva un área de toque de 2rem aunque el ícono se vea más chico
     const closeBtn = toast.querySelector<HTMLElement>('.swal2-close');
     if (closeBtn) {
         Object.assign(closeBtn.style, {
             color: textColor,
             opacity: '0.8',
-            fontSize: '1.5rem',
+            fontSize: '1.25rem',
             lineHeight: '1',
-            marginLeft: '0.5rem',
+            margin: '0 0 0 0.25rem',
+            width: '2rem',
+            height: '2rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             transition: 'opacity 0.2s',
         });
         closeBtn.addEventListener('mouseenter', () => { closeBtn.style.opacity = '1'; });
@@ -265,8 +313,8 @@ export const closeProcesando = (delay: number = LOADER_CLOSE_DELAY_MS): void => 
 };
 
 /**
- * Muestra una notificación tipo toast en el estilo del ERP.
- * success e info usan la paleta del tema; error y warning usan colores semánticos.
+ * Muestra una notificación tipo toast compacta en el estilo del ERP.
+ * Mismo timer, posición y comportamiento al pasar el mouse que antes.
  */
 export const showAlert = (title: string, icon: SweetAlertIcon = 'success'): void => {
     const MI = getPalette();
@@ -283,6 +331,7 @@ export const showAlert = (title: string, icon: SweetAlertIcon = 'success'): void
     const Toast = Swal.mixin({
         toast: true,
         position: 'bottom-end',
+        padding: '0.6rem 0.75rem',
         showConfirmButton: false,
         showCloseButton: true,
         closeButtonHtml: '&times;',
@@ -303,8 +352,8 @@ export const showAlert = (title: string, icon: SweetAlertIcon = 'success'): void
         icon,
         title,
         customClass: {
-            popup: 'rounded-2xl',
-            title: 'font-semibold text-base',
+            popup: 'rounded-xl',
+            title: 'font-semibold',
             icon: 'm-0',
         },
     });

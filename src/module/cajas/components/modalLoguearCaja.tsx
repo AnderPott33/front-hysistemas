@@ -25,9 +25,9 @@ const ModalLoguearCaja: React.FC<ModalLoguearCajaProps> = ({
         cargarCajas()
     }, [isOpen])
 
-    useEffect(()=>{
+    useEffect(() => {
         setCajaSelect(null)
-    },[isOpen])
+    }, [isOpen])
 
     const { caja, seleccionarCaja } = useCaja();
     const cajasAbiertas = cajas.filter((c) => c.estado === "Abierta");
@@ -37,7 +37,7 @@ const ModalLoguearCaja: React.FC<ModalLoguearCajaProps> = ({
         setCajaSelect(caja);
 
     };
-
+    const estaActiva = Boolean(caja);
     return (
         <ModalGeneral
             isOpen={isOpen}
@@ -51,15 +51,34 @@ const ModalLoguearCaja: React.FC<ModalLoguearCajaProps> = ({
             maxHeight="600px"
             children={
                 <>
-                    <div className="px-3 ">
-                        <div className="flex gap-2 justify-start items-center flex-wrap pb-4 pt-2">
+                    <div className="grid gap-2 px-3 ">
+                        <div className="pt-2">
+                            <div
+                            className={` flex items-center gap-2 px-3 py-2 rounded-xl border transition-colors ${estaActiva
+                                    ? "bg-green-500/10 border-green-500/30 text-green-400"
+                                    : "bg-red-500/10 border-red-500/30 text-red-400"
+                                }`}
+                        >
                             <span
-                             className="flex justify-center items-center gap-2 text-xs font-semibold px-3 py-1 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200"
-                            >Caja Logueada: {caja?.id}</span>
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold text-white shadow-sm ${estaActiva ? "bg-green-600" : "bg-red-600"
+                                    }`}
+                            >
+                                {estaActiva ? "Caja Activa" : "Caja Offline"}
+                            </span>
+
+                            {estaActiva && (
+                                <span className="text-sm">
+                                    Caja: {caja!.id}
+                                    {caja!.descripcion ? ` - ${caja!.descripcion}` : ""}
+                                </span>
+                            )}
                         </div>
-                        <div className="rounded-3xl bg-white border border-mi-primera/15 shadow-lg shadow-mi-cuarta/10 overflow-hidden">
+                        </div>
+                        <div className="rounded-3xl bg-mi-segunda/50 border border-mi-primera/15 shadow-lg shadow-mi-cuarta/10 overflow-hidden">
                             <DataTable<InterfaceCajas>
                                 data={cajasAbiertas}
+                                pagination={false}
+                                showFilters={false}
                                 columns={[
                                     {
                                         header: "#",
@@ -67,7 +86,7 @@ const ModalLoguearCaja: React.FC<ModalLoguearCajaProps> = ({
                                         align: "start",
                                         width: "100px",
                                         sortable: true,
-                                        filterable: true
+                                        filterable: false
                                     },
                                     {
                                         header: "Descripción",
@@ -75,24 +94,24 @@ const ModalLoguearCaja: React.FC<ModalLoguearCajaProps> = ({
                                         align: "start",
                                         width: "200px",
                                         sortable: true,
-                                        filterable: true
+                                        filterable: false
                                     },
                                     {
                                         header: "Apertura",
                                         accessor: "apertura",
                                         align: "center",
                                         sortable: true,
-                                        filterable: true,
+                                        filterable: false,
                                         cell: (row) => formatarDataHora(row.apertura)
                                     },
-                                    
+
                                     {
                                         header: "Estado",
                                         accessor: "estado",
                                         align: "center",
                                         width: "100px",
                                         sortable: true,
-                                        filterable: true,
+                                        filterable: false,
                                         cell: (row) => (
                                             <span className="flex justify-center items-center">
                                                 {row.estado === 'Abierta' ? (
@@ -112,7 +131,7 @@ const ModalLoguearCaja: React.FC<ModalLoguearCajaProps> = ({
                                         accessor: "usuario",
                                         align: "center",
                                         sortable: true,
-                                        filterable: true
+                                        filterable: false
                                     },
                                 ]}
                                 showGlobalSearch={false}

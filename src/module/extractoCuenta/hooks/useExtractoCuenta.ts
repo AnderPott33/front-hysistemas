@@ -27,11 +27,23 @@ type ParamsExtracto = [
 export const useExtractoCuenta = () => {
     const { token } = useAuth();
 
-    const [loading, setLoading] = useState<boolean>(false);
     const [saldosAnteriores, setSaldosAnteriores] = useState<InterfaceExtractoSaldoAnterior[]>([]);
     const [extractoCuenta, setExtractoCuenta] = useState<InterfaceExtractoMovimiento[]>([]);
     const [totalesFormaPago, setTotalesFormaPago] = useState<InterfaceTotalFormaPago[]>([]);
     const [saldoCuenta, setSaldoCuenta] = useState<number | null>(null);
+
+    // Contador de operaciones en curso: loading es true mientras quede alguna pendiente
+    const [operacionesPendientes, setOperacionesPendientes] = useState(0);
+    const loading = operacionesPendientes > 0;
+
+    const conLoading = async <T,>(operacion: () => Promise<T>): Promise<T> => {
+        setOperacionesPendientes((n) => n + 1);
+        try {
+            return await operacion();
+        } finally {
+            setOperacionesPendientes((n) => n - 1);
+        }
+    };
 
     // Guarda los filtros de la última consulta para recargar el extracto después de guardar
     const ultimaConsulta = useRef<ParamsExtracto | null>(null);
@@ -49,7 +61,7 @@ export const useExtractoCuenta = () => {
         ultimaCuentaSaldo.current = cuentaId;
 
         try {
-            const data = await obtenerSaldoCuenta(token, cuentaId);
+            const data = await conLoading(() => obtenerSaldoCuenta(token, cuentaId));
             setSaldoCuenta(Number(data.saldo ?? 0));
             return data ?? 0;
         } catch (error) {
@@ -65,9 +77,10 @@ export const useExtractoCuenta = () => {
         const [consolidado, moneda_id, fecha_inicio, fecha_fin, entidad, caja_id, cuenta_id] = params;
 
         try {
-            setLoading(true);
-            const data: InterfaceExtractoRespuesta = await obtenerExtractoCuenta(
-                token, consolidado, moneda_id, fecha_inicio, fecha_fin, entidad, caja_id, cuenta_id
+            const data: InterfaceExtractoRespuesta = await conLoading(() =>
+                obtenerExtractoCuenta(
+                    token, consolidado, moneda_id, fecha_inicio, fecha_fin, entidad, caja_id, cuenta_id
+                )
             );
             setSaldosAnteriores(data.saldos_anteriores ?? []);
             setExtractoCuenta(data.movimientos ?? []);
@@ -77,8 +90,6 @@ export const useExtractoCuenta = () => {
             setSaldosAnteriores([]);
             setExtractoCuenta([]);
             setTotalesFormaPago([]);
-        } finally {
-            setLoading(false);
         }
 
         // El saldo de cuenta se consulta solo si el filtro trae una cuenta
@@ -96,14 +107,18 @@ export const useExtractoCuenta = () => {
 
     const registrarAsientosOperacion = async (asientos: AsientoNuevo[]): Promise<void> => {
         if (!token) throw new Error("No autenticado");
-        await registrarAsientos(token, asientos);
-        await refrescar();
+        await conLoading(async () => {
+            await registrarAsientos(token, asientos);
+            await refrescar();
+        });
     };
 
     const cancelarAsientoOperacion = async (asientoId: number, motivo: string): Promise<void> => {
         if (!token) throw new Error("No autenticado");
-        await cancelarAsiento(token, asientoId, motivo);
-        await refrescar();
+        await conLoading(async () => {
+            await cancelarAsiento(token, asientoId, motivo);
+            await refrescar();
+        });
     };
 
     return {

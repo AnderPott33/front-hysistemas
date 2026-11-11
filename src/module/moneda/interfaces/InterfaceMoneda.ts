@@ -10,6 +10,7 @@ export interface InterfaceMoneda {
 
 export interface InterfaceTipoCambio {
     id: number | string;
+    grupo_id?: string | null;
     moneda_origen: number | string;
     origen_codigo?: string;
     origen_nombre?: string;
@@ -25,7 +26,6 @@ export interface InterfaceTipoCambio {
 }
 
 export interface MonedaAPIP {
-
     symbol: string;
 }
 

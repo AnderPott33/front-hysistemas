@@ -84,7 +84,7 @@ const menuItems: MenuItem[] = [
     path: '/dashboard',
     permiso: 'ver_dashboard',
   },
-    {
+  {
     name: 'Archivo',
     icon: <BookText className="w-5 h-5" />,
     subtitle: 'Gestión de datos del sistema',
@@ -105,15 +105,15 @@ const menuItems: MenuItem[] = [
       { name: 'Agregar Compra', icon: <Warehouse className="w-4 h-4" />, path: '/inventario/compras', permiso: 'ver_almacenes', subtitle: 'COMPRAS' },
     ],
   }, */
-/*   {
-    name: 'Ventas',
-    icon: <ShoppingCart className="w-5 h-5" />,
-    subtitle: 'Gestión de Ventas',
-    subItems: [
-      { name: 'Pedidos', icon: <ShoppingCart className="w-4 h-4" />, path: '/ventas/pedidos', permiso: 'ver_pedidos' },
-      { name: 'Venta', icon: <BriefcaseBusiness className="w-4 h-4" />, path: '/ventas/ventas', permiso: 'pagina_ventas' },
-    ],
-  }, */
+  /*   {
+      name: 'Ventas',
+      icon: <ShoppingCart className="w-5 h-5" />,
+      subtitle: 'Gestión de Ventas',
+      subItems: [
+        { name: 'Pedidos', icon: <ShoppingCart className="w-4 h-4" />, path: '/ventas/pedidos', permiso: 'ver_pedidos' },
+        { name: 'Venta', icon: <BriefcaseBusiness className="w-4 h-4" />, path: '/ventas/ventas', permiso: 'pagina_ventas' },
+      ],
+    }, */
   {
     name: 'Finanzas',
     icon: <DollarSign className="w-5 h-5" />,
@@ -405,14 +405,20 @@ const Topbar: React.FC<TopbarProps> = ({ setIsMobileOpen, isDark, onToggleDark }
         {/* Caja logueada: al hacer clic abre el modal para cambiarla */}
         <button
           type="button"
-          onClick={() => setModalCajaOpen(true)
-          }
+          onClick={() => setModalCajaOpen(true)}
           title="Cambiar caja logueada"
-          className="hidden sm:flex items-center gap-2 pl-2.5 pr-3 py-1.5 rounded-xl bg-white/10 border border-white/15 hover:bg-white/15 transition-colors focus:outline-none"
+          className={`hidden sm:flex items-center gap-2 pl-2.5 pr-3 py-1.5 rounded-xl border transition-colors focus:outline-none ${!cajaRegistrada
+              ? "bg-red-500/15 border-red-500/40 hover:bg-red-500/25"
+              : "bg-white/10 border-white/15 hover:bg-white/15"
+            }`}
         >
-          <Wallet className="w-4 h-4 text-mi-primera" />
-          <span className="text-[11px] text-white/60 font-medium">Caja:</span>
-          <span className="text-xs font-bold text-white">{cajaRegistrada ?? '—'}</span>
+          <Wallet className={`w-4 h-4 ${!cajaRegistrada ? "text-red-400" : "text-mi-primera"}`} />
+          <span className={`text-[11px] font-medium ${!cajaRegistrada ? "text-red-300" : "text-white/60"}`}>
+            Caja:
+          </span>
+          <span className={`text-xs font-bold ${!cajaRegistrada ? "text-red-400" : "text-white"}`}>
+            {cajaRegistrada ?? "Offline"}
+          </span>
         </button>
 
         {/* Toggle modo oscuro */}

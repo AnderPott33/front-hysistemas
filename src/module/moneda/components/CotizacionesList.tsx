@@ -66,6 +66,19 @@ export const CotizacionesList = ({ datos, datosMonedas, cargarCotizacion, active
                     columns={[
                         { header: "#", accessor: "id", align: "start", sortable: true, filterable: true },
                         {
+                            header: "Grupo", accessor: "grupo_id", align: "center", sortable: false,
+                            cell: e => e.grupo_id ? (
+                                <span
+                                    className="font-mono text-xs text-mi-cuarta/60"
+                                    title={String(e.grupo_id)}
+                                >
+                                    {String(e.grupo_id).slice(0, 8)}
+                                </span>
+                            ) : (
+                                <span className="text-mi-cuarta/30">—</span>
+                            )
+                        },
+                        {
                             header: "Moneda Origen", accessor: "moneda_origen", align: "start", sortable: true,
                             cell: e => {
                                 const moneda = datosMonedas.find(ee => ee.id === e.moneda_origen)

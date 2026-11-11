@@ -18,45 +18,48 @@ export const usePersona = () => {
 
     const [personas, setPersonas] = useState<InterfacePersona[]>([]);
     const [personaSeleccionada, setPersonaSeleccionada] = useState<InterfacePersona | null>(null);
-    const [loading, setLoading] = useState<boolean>(false);
+
+    // Contador de operaciones en curso: loading es true mientras quede alguna pendiente
+    const [operacionesPendientes, setOperacionesPendientes] = useState(0);
+    const loading = operacionesPendientes > 0;
+
+    const conLoading = async <T,>(operacion: () => Promise<T>): Promise<T> => {
+        setOperacionesPendientes((n) => n + 1);
+        try {
+            return await operacion();
+        } finally {
+            setOperacionesPendientes((n) => n - 1);
+        }
+    };
 
     /** Consulta el RUC en el SET y devuelve los datos listos para el formulario (o null si falla) */
     const buscarDatosRuc = async (ruc: string): Promise<InterfaceDatosPersonaRuc | null> => {
         try {
-            setLoading(true);
-            const data = await buscarRuc(ruc);
+            const data = await conLoading(() => buscarRuc(ruc));
             return mapearRucAPersona(data);
         } catch (error) {
             console.error("Error al consultar RUC:", error);
             return null;
-        } finally {
-            setLoading(false);
         }
     };
 
     const cargarPersonas = async () => {
         if (!token) return;
         try {
-            setLoading(true);
-            const data = await obtenerPersona(token);
+            const data = await conLoading(() => obtenerPersona(token));
             setPersonas(data);
         } catch (error) {
             console.error("Error al cargar personas:", error);
-        } finally {
-            setLoading(false);
         }
     };
 
     const cargarPersonaId = async (id: number) => {
         if (!token) return;
         try {
-            setLoading(true);
-            const data = await obtenerPersonaId(token, id);
+            const data = await conLoading(() => obtenerPersonaId(token, id));
             setPersonaSeleccionada(data);
         } catch (error) {
             console.error("Error al cargar persona:", error);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -66,11 +69,13 @@ export const usePersona = () => {
         const esEdicion = !!persona.id;
 
         try {
-            setLoading(true);
-            const data = esEdicion
-                ? await actualizarPersona(token, persona)
-                : await crearPersona(token, persona);
-            await cargarPersonas();
+            const data = await conLoading(async () => {
+                const respuesta = esEdicion
+                    ? await actualizarPersona(token, persona)
+                    : await crearPersona(token, persona);
+                await cargarPersonas();
+                return respuesta;
+            });
             showAlert(data.mensaje, "success");
             return data;
         } catch (error) {
@@ -79,8 +84,6 @@ export const usePersona = () => {
                 error
             );
             throw error;
-        } finally {
-            setLoading(false);
         }
     };
 

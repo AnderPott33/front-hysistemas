@@ -26,17 +26,27 @@ export const useCategorias = () => {
     const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<InterfaceCategoria | null>(null);
     const [subcategorias, setSubcategorias] = useState<InterfaceSubcategoria[]>([]);
     const [subcategoriaSeleccionada, setSubcategoriaSeleccionada] = useState<InterfaceSubcategoria | null>(null);
-    const [loading, setLoading] = useState<boolean>(false);
+
+    // Contador de operaciones en curso: loading es true mientras quede alguna pendiente
+    const [operacionesPendientes, setOperacionesPendientes] = useState(0);
+    const loading = operacionesPendientes > 0;
+
+    const conLoading = async <T,>(operacion: () => Promise<T>): Promise<T> => {
+        setOperacionesPendientes((n) => n + 1);
+        try {
+            return await operacion();
+        } finally {
+            setOperacionesPendientes((n) => n - 1);
+        }
+    };
 
     const cargarCategorias = async () => {
         if (!token) return;
         try {
-            setLoading(true);
-            setCategorias(await obtenerCategorias(token));
+            const data = await conLoading(() => obtenerCategorias(token));
+            setCategorias(data);
         } catch (error) {
             console.error("Error al cargar categorías:", error);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -47,42 +57,38 @@ export const useCategorias = () => {
             return;
         }
         try {
-            setLoading(true);
-            setCategoriaSeleccionada(await obtenerCategoriaId(token, id));
+            const data = await conLoading(() => obtenerCategoriaId(token, id));
+            setCategoriaSeleccionada(data);
         } catch (error) {
             console.error(`Error al cargar la categoría ${id}:`, error);
-        } finally {
-            setLoading(false);
         }
     };
 
     const guardarCategoria = async (categoria: InterfaceCategoriaForm): Promise<boolean> => {
         if (!token) return false;
         try {
-            setLoading(true);
-            const data = await crearOActualizarCategoria(token, categoria);
-            // Cambiar el tipo de una categoría afecta la lista de subcategorías
-            await Promise.all([cargarCategorias(), cargarSubcategorias()]);
+            const data = await conLoading(async () => {
+                const respuesta = await crearOActualizarCategoria(token, categoria);
+                // Cambiar el tipo de una categoría afecta la lista de subcategorías
+                await Promise.all([cargarCategorias(), cargarSubcategorias()]);
+                return respuesta;
+            });
             showAlert(data.message, 'success');
             return true;
         } catch (error: any) {
             console.error("Error al crear/actualizar categoría:", error);
             showAlert(mensajeError(error, 'Error al crear/actualizar categoría'), 'error');
             return false;
-        } finally {
-            setLoading(false);
         }
     };
 
     const cargarSubcategorias = async () => {
         if (!token) return;
         try {
-            setLoading(true);
-            setSubcategorias(await obtenerSubcategorias(token));
+            const data = await conLoading(() => obtenerSubcategorias(token));
+            setSubcategorias(data);
         } catch (error) {
             console.error("Error al cargar subcategorías:", error);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -94,21 +100,21 @@ export const useCategorias = () => {
             return;
         }
         try {
-            setLoading(true);
-            setSubcategoriaSeleccionada(await obtenerSubcategoriaId(token, id, tipo));
+            const data = await conLoading(() => obtenerSubcategoriaId(token, id, tipo));
+            setSubcategoriaSeleccionada(data);
         } catch (error) {
             console.error(`Error al cargar la subcategoría ${id}:`, error);
-        } finally {
-            setLoading(false);
         }
     };
 
     const guardarSubcategoria = async (subcategoria: InterfaceSubcategoriaForm): Promise<boolean> => {
         if (!token) return false;
         try {
-            setLoading(true);
-            const data = await crearOActualizarSubcategoria(token, subcategoria);
-            await cargarSubcategorias();
+            const data = await conLoading(async () => {
+                const respuesta = await crearOActualizarSubcategoria(token, subcategoria);
+                await cargarSubcategorias();
+                return respuesta;
+            });
             // Al mover una fila de tabla el id puede cambiar: se limpia la selección para no reutilizarlo
             setSubcategoriaSeleccionada(null);
             showAlert(data.message, 'success');
@@ -117,8 +123,6 @@ export const useCategorias = () => {
             console.error("Error al crear/actualizar subcategoría:", error);
             showAlert(mensajeError(error, 'Error al crear/actualizar subcategoría'), 'error');
             return false;
-        } finally {
-            setLoading(false);
         }
     };
 

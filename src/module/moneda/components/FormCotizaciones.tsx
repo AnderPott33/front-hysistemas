@@ -26,6 +26,17 @@ const SIMBOLO: Record<string, string> = { USD: "$", BRL: "R$", PYG: "Gs" };
 
 type Par = { origen: number; destino: number };
 
+/** Genera un UUID v4. Usa crypto.randomUUID si existe; si no (HTTP sin contexto seguro), usa un respaldo. */
+const nuevoGrupoId = (): string => {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+        return crypto.randomUUID();
+    }
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+        const r = (Math.random() * 16) | 0;
+        return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+    });
+};
+
 const FormCotizaciones = ({
     cotizacionSelect,
     datosMonedas,
@@ -53,7 +64,7 @@ const FormCotizaciones = ({
 
     const [pares, setPares] = useState<Par[]>([]);
     const [valores, setValores] = useState<Record<string, any>>({});
-    // Cotizaciones existentes del conjunto que se edita, indexadas por par
+    // Cotizaciones existentes del grupo que se edita, indexadas por par
     const [existentes, setExistentes] = useState<Record<string, InterfaceTipoCambio>>({});
     const [nuevoOrigen, setNuevoOrigen] = useState<number | undefined>();
     const [nuevoDestino, setNuevoDestino] = useState<number | undefined>();
@@ -61,11 +72,12 @@ const FormCotizaciones = ({
     // Pares con una consulta a la API en curso, para no repetir llamadas
     const pendientes = useRef<Set<string>>(new Set());
 
-    // Carga el conjunto al editar, o los pares por defecto al crear
+    // Carga el grupo al editar (filas con el mismo grupo_id), o los pares por defecto al crear
     useEffect(() => {
         if (cotizacionSelect) {
-            const fecha = formatarDataInput(cotizacionSelect.fecha);
-            const grupo = datosCotizaciones.filter(c => formatarDataInput(c.fecha) === fecha);
+            const grupo = cotizacionSelect.grupo_id
+                ? datosCotizaciones.filter(c => c.grupo_id === cotizacionSelect.grupo_id)
+                : [];
             const lista = grupo.some(c => Number(c.id) === Number(cotizacionSelect.id))
                 ? grupo
                 : [...grupo, cotizacionSelect];
@@ -143,6 +155,11 @@ const FormCotizaciones = ({
 
     const guardarTodos = async () => {
         const hoy = formatarDataInput(new Date());
+
+        // Editar: el grupo existente se conserva (los pares nuevos entran al mismo grupo).
+        // Crear: se genera un grupo nuevo que comparten todas las filas de este guardado.
+        const grupoId = cotizacionSelect?.grupo_id ?? nuevoGrupoId();
+
         const items = pares
             .filter(p => Number(valores[clave(p.origen, p.destino)]) > 0)
             .map(p => {
@@ -155,8 +172,10 @@ const FormCotizaciones = ({
                     valor: valores[k],
                     fecha: existente ? formatarDataInput(existente.fecha) : hoy,
                     activo: existente ? Boolean(existente.activo) : true,
+                    grupo_id: grupoId,
                 };
             });
+
         await guardarCotizacion(items);
     };
 
@@ -196,9 +215,8 @@ const FormCotizaciones = ({
                                 const destino: InterfaceMoneda | undefined = buscar(p.destino);
                                 if (!origen || !destino) return null;
                                 const k = clave(p.origen, p.destino);
-                    
-                                
                                 const esEditando = k === editando;
+
                                 return (
                                     <tr key={k} className={esEditando ? "bg-mi-primera/10" : "hover:bg-mi-primera/5"}>
                                         <td className="px-6 py-4">
@@ -289,6 +307,6 @@ const FormCotizaciones = ({
             </div>
         </div>
     );
-}
+};
 
 export default FormCotizaciones;

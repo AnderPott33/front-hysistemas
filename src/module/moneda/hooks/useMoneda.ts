@@ -1,12 +1,11 @@
 import { useState, useCallback } from "react";
 import { useAuth } from "../../../context/AuthContext";
-import { useCotizacion } from "../../../context/CotizacionContext"; // ✅ Importar
-import type { InterfaceMoneda, InterfaceTipoCambio, MonedaAPI, MonedaAPIP } from "../interfaces/InterfaceMoneda";
+import { useCotizacion } from "../../../context/CotizacionContext";
+import type { InterfaceMoneda, InterfaceTipoCambio, MonedaAPIP } from "../interfaces/InterfaceMoneda";
 import {
     obtenerMonedas, obtenerMonedaId, guardarMoneda,
     obtenerTiposCambio, obtenerTipoCambioId, guardarTipoCambio, obtenerTipoCambioVigente,
     obtenerMonedasActivas,
-    obtenerCotizacionActual,
     obtenerSimboloMoneda,
     obtenerCotizacionPorPar,
     cambiosHoy
@@ -15,7 +14,7 @@ import { showAlert } from "../../../components/utils/Procesando";
 
 export const useMoneda = () => {
     const { token } = useAuth();
-    const { refrescar: refrescarCotizacion } = useCotizacion(); // ✅ Obtener refrescar
+    const { refrescar: refrescarCotizacion } = useCotizacion();
 
     const [monedas, setMonedas] = useState<InterfaceMoneda[]>([]);
     const [monedasA, setMonedasA] = useState<InterfaceMoneda[]>([]);
@@ -24,91 +23,86 @@ export const useMoneda = () => {
     const [cambioVigente, setCambioVigente] = useState<InterfaceTipoCambio[]>([]);
     const [cotizacionHOY, setCotizacionHOY] = useState('verificando');
     const [tipoCambioSeleccionado, setTipoCambioSeleccionado] = useState<InterfaceTipoCambio | null>(null);
-    const [loading, setLoading] = useState<boolean>(false);
+
+    // Contador de operaciones en curso: loading es true mientras quede alguna pendiente
+    const [operacionesPendientes, setOperacionesPendientes] = useState(0);
+    const loading = operacionesPendientes > 0;
+
+    const conLoading = useCallback(async <T,>(operacion: () => Promise<T>): Promise<T> => {
+        setOperacionesPendientes((n) => n + 1);
+        try {
+            return await operacion();
+        } finally {
+            setOperacionesPendientes((n) => n - 1);
+        }
+    }, []);
 
     // ─── Moneda ───────────────────────────────────────────────────────────────
 
-    // ✅ Envuelto con useCallback para evitar reconstrucción innecesaria
     const hayCotizacion = useCallback(async (): Promise<boolean> => {
-
         if (!token) throw new Error("Sin token");
-        setLoading(true);
         try {
-            const dataRegistro: any = await cambiosHoy(token);
+            const dataRegistro: any = await conLoading(() => cambiosHoy(token));
             const hayRegistro = dataRegistro?.hay_tipo_cambio_hoy ?? dataRegistro?.data?.hay_tipo_cambio_hoy;
 
             if (!hayRegistro) {
-                setCotizacionHOY('sin_cotizacion')
+                setCotizacionHOY('sin_cotizacion');
                 showAlert("No hay registro de cotización para hoy", 'warning');
                 return false;
             }
 
-            setCotizacionHOY('ok')
-
+            setCotizacionHOY('ok');
             return true;
-
         } catch (error) {
             console.error("[hayCotizacion] Error:", error);
             throw error;
-        } finally {
-            setLoading(false);
         }
-    }, [token]); // Solo depende de token
+    }, [token, conLoading]);
 
     const cargarMonedas = async () => {
         if (!token) return;
         try {
-            setLoading(true);
-            const data = await obtenerMonedas(token);
+            const data = await conLoading(() => obtenerMonedas(token));
             setMonedas(data);
         } catch (error) {
             console.error("Error al cargar monedas:", error);
-        } finally {
-            setLoading(false);
         }
     };
 
     const cargarMonedasActivas = async () => {
         if (!token) return;
         try {
-            setLoading(true);
-            const data = await obtenerMonedasActivas(token);
+            const data = await conLoading(() => obtenerMonedasActivas(token));
             setMonedasA(data);
         } catch (error) {
-            console.error("Error al cargar monedas:", error);
-        } finally {
-            setLoading(false);
+            console.error("Error al cargar monedas activas:", error);
         }
     };
 
     const cargarMonedaPorId = async (id: number) => {
         if (!token) return;
         try {
-            setLoading(true);
-            const data = await obtenerMonedaId(token, id);
+            const data = await conLoading(() => obtenerMonedaId(token, id));
             setMonedaSeleccionada(data);
         } catch (error) {
             console.error(`Error al cargar moneda ${id}:`, error);
-        } finally {
-            setLoading(false);
         }
     };
 
     const guardarMonedaFn = async (moneda: InterfaceMoneda) => {
         if (!token) return;
         try {
-            setLoading(true);
-            const data = await guardarMoneda(token, moneda);
-            await cargarMonedas();
-            showAlert(data.mensaje, 'success')
+            const data = await conLoading(async () => {
+                const respuesta = await guardarMoneda(token, moneda);
+                await cargarMonedas();
+                return respuesta;
+            });
+            showAlert(data.mensaje, 'success');
             return data;
-
         } catch (error) {
             console.error("Error al guardar moneda:", error);
-            showAlert("Error al guardar moneda", 'error')
+            showAlert("Error al guardar moneda", 'error');
             throw error;
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -117,61 +111,49 @@ export const useMoneda = () => {
     const cargarTiposCambio = async () => {
         if (!token) return;
         try {
-            setLoading(true);
-            const data = await obtenerTiposCambio(token);
+            const data = await conLoading(() => obtenerTiposCambio(token));
             setTiposCambio(data);
-            hayCotizacion()
+            hayCotizacion();
         } catch (error) {
             console.error("Error al cargar tipos de cambio:", error);
-        } finally {
-            setLoading(false);
         }
     };
 
     const buscarCambioVigente = async (origen: number, destino: number, fecha: string) => {
         if (!token) return;
         try {
-            setLoading(true);
-            const data = await obtenerTipoCambioVigente(token, origen, destino, fecha);
+            const data = await conLoading(() => obtenerTipoCambioVigente(token, origen, destino, fecha));
             setCambioVigente(data);
         } catch (error) {
             console.error("Error al cargar cambio:", error);
-        } finally {
-            setLoading(false);
         }
     };
 
     const cargarTipoCambioPorId = async (id: number) => {
         if (!token) return;
         try {
-            setLoading(true);
-            const data = await obtenerTipoCambioId(token, id);
+            const data = await conLoading(() => obtenerTipoCambioId(token, id));
             setTipoCambioSeleccionado(data);
         } catch (error) {
             console.error(`Error al cargar tipo de cambio ${id}:`, error);
-        } finally {
-            setLoading(false);
         }
     };
 
     const guardarTipoCambioFn = async (tipoCambio: InterfaceTipoCambio) => {
         if (!token) return;
         try {
-            setLoading(true);
-            const data = await guardarTipoCambio(token, tipoCambio);
-            
-            // ✅ AQUÍ: Refrescar la cotización después de guardar exitosamente
-            console.log('📊 Refrescando cotización tras guardar tipo de cambio...');
-            await refrescarCotizacion();
-            
+            const data = await conLoading(async () => {
+                const respuesta = await guardarTipoCambio(token, tipoCambio);
+                console.log('📊 Refrescando cotización tras guardar tipo de cambio...');
+                await refrescarCotizacion();
+                return respuesta;
+            });
             showAlert('Cotización guardada exitosamente', 'success');
             return data;
         } catch (error) {
             console.error("Error al guardar tipo de cambio:", error);
-            showAlert('No se pudo guardar la cotización', 'error')
+            showAlert('No se pudo guardar la cotización', 'error');
             throw error;
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -184,12 +166,9 @@ export const useMoneda = () => {
         }
     };
 
-    const obtenerSimbolo = async (
-        codigo: string
-    ): Promise<MonedaAPIP | null> => {
+    const obtenerSimbolo = async (codigo: string): Promise<MonedaAPIP | null> => {
         try {
-            const data = await obtenerSimboloMoneda(codigo);
-            return data;
+            return await obtenerSimboloMoneda(codigo);
         } catch (error) {
             console.error(error);
             return null;

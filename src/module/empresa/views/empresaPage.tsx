@@ -1,7 +1,7 @@
 import { BriefcaseBusiness, Check, CircleAlert, DollarSign, FileCog, Landmark, SlidersHorizontal } from "lucide-react";
 import PageBanner from "../../../components/utils/Banner";
 import ActionBanner from "../../../components/utils/ActionBanner";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import FormInformacionGeneral from "../components/formInfoGeneral";
 import { useEmpresa } from "../hooks/useEmpresa";
 import type { InterfaceEmpresa } from "../interfaces/interfaceEmpresa";
@@ -11,6 +11,7 @@ import FormDTE from "../components/formDTE";
 import FormOtros from "../components/formOtros";
 import { showAlert } from "../../../components/utils/Procesando";
 import GlobalTooltip from "../../../components/utils/GlobalTooltip";
+import Loading from "../../../components/utils/Loading";
 
 const EmpresaPage = () => {
     const { empresa, guardarEmpresaFn, cargarEmpresa, loading } = useEmpresa();
@@ -53,12 +54,9 @@ const EmpresaPage = () => {
         actualizar()
     }, [empresa]);
 
-
-
     const recibirDatos = useCallback((empresaRec: InterfaceEmpresa) => {
         setFormData(empresaRec);
     }, []);
-
 
     const guardarCompleto = async () => {
         const result = await guardarEmpresaFn(formData)
@@ -68,9 +66,12 @@ const EmpresaPage = () => {
         actualizar()
     }
 
+    const yaTieneEmpresa = empresa;
 
     return (
         <>
+            {loading && <Loading />}
+
             <PageBanner
                 icon={<Landmark />}
                 title="Empresa"
@@ -101,6 +102,7 @@ const EmpresaPage = () => {
                                         {
                                             id: 'informacion_del_negocio',
                                             label: 'Información Del Negocio',
+                                            disabled: !yaTieneEmpresa,
                                             icon: <BriefcaseBusiness className="w-4 h-4" />,
                                             content: (
                                                 <div className="bg-white rounded-2xl shadow-md  p-3">
@@ -115,6 +117,7 @@ const EmpresaPage = () => {
                                         {
                                             id: 'actividad_economica',
                                             label: 'Actividad Económica',
+                                            disabled: !yaTieneEmpresa,
                                             icon: <DollarSign className="w-4 h-4" />,
                                             content: (
                                                 <div className="bg-white rounded-2xl shadow-md  p-3">
@@ -129,6 +132,7 @@ const EmpresaPage = () => {
                                         {
                                             id: 'dte',
                                             label: 'DTE',
+                                            disabled: !yaTieneEmpresa,
                                             icon: <FileCog className="w-4 h-4" />,
                                             content: (
                                                 <div className="bg-white rounded-2xl shadow-md  p-3">
@@ -143,6 +147,7 @@ const EmpresaPage = () => {
                                         {
                                             id: 'otros',
                                             label: 'Otros',
+                                            disabled: !yaTieneEmpresa,
                                             icon: <SlidersHorizontal className="w-4 h-4" />,
                                             content: (
                                                 <div className="bg-white rounded-2xl shadow-md  p-3">

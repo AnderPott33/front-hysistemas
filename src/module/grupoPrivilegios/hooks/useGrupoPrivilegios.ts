@@ -15,83 +15,86 @@ export const useGrupoPrivilegios = () => {
 
     const [gruposPrivilegios, setGruposPrivilegios] = useState<InterfaceGrupoPrivilegios[]>([]);
     const [grupoSeleccionado, setGrupoSeleccionado] = useState<InterfaceGrupoPrivilegios | null>(null);
-    const [loading, setLoading] = useState<boolean>(false);
+
+    // Contador de operaciones en curso: loading es true mientras quede alguna pendiente
+    const [operacionesPendientes, setOperacionesPendientes] = useState(0);
+    const loading = operacionesPendientes > 0;
+
+    const conLoading = async <T,>(operacion: () => Promise<T>): Promise<T> => {
+        setOperacionesPendientes((n) => n + 1);
+        try {
+            return await operacion();
+        } finally {
+            setOperacionesPendientes((n) => n - 1);
+        }
+    };
 
     const cargarGrupos = async () => {
         if (!token) return;
         try {
-            setLoading(true);
-            const data = await obtenerGruposPrivilegios(token);
+            const data = await conLoading(() => obtenerGruposPrivilegios(token));
             setGruposPrivilegios(data || []);
         } catch (error) {
             console.error("Error al cargar grupos de privilegios:", error);
             showAlert("Error al cargar grupos de privilegios", "error");
-        } finally {
-            setLoading(false);
         }
     };
 
     const cargarGrupoPorId = async (id: number) => {
         if (!token) return;
+        if (!id) {
+            setGrupoSeleccionado(null);
+            return;
+        }
         try {
-            setLoading(true);
-            if (id) {
-                const data = await obtenerGrupoPrivilegiosId(token, id);
-                setGrupoSeleccionado(data || null);
-            } else {
-                setGrupoSeleccionado(null);
-            }
+            const data = await conLoading(() => obtenerGrupoPrivilegiosId(token, id));
+            setGrupoSeleccionado(data || null);
         } catch (error) {
             console.error(`Error al cargar grupo ${id}:`, error);
             showAlert("Error al cargar grupo de privilegios", "error");
-        } finally {
-            setLoading(false);
         }
     };
 
     const guardarGrupo = async (grupo: any) => {
         if (!token) return;
         try {
-            setLoading(true);
-            let data;
-
-            if (grupo.id && grupo.id !== '') {
-                const id = grupo.id;
-                data = await actualizarGrupoPrivilegios(token, id, grupo);
-                showAlert('Grupo de privilegios actualizado correctamente', 'success');
-            } else {
-                data = await crearGrupoPrivilegios(token, grupo);
-                showAlert('Grupo de privilegios creado correctamente', 'success');
-            }
-
-            await cargarGrupos();
-            if (data?.grupo) {
-                setGrupoSeleccionado(data.grupo);
-            }
+            const data = await conLoading(async () => {
+                const respuesta = grupo.id && grupo.id !== ''
+                    ? await actualizarGrupoPrivilegios(token, grupo.id, grupo)
+                    : await crearGrupoPrivilegios(token, grupo);
+                await cargarGrupos();
+                if (respuesta?.grupo) {
+                    setGrupoSeleccionado(respuesta.grupo);
+                }
+                return respuesta;
+            });
+            showAlert(
+                grupo.id && grupo.id !== ''
+                    ? 'Grupo de privilegios actualizado correctamente'
+                    : 'Grupo de privilegios creado correctamente',
+                'success'
+            );
             return data;
         } catch (error) {
             console.error("Error al guardar grupo de privilegios:", error);
             showAlert('No se pudo procesar grupo de privilegios', 'error');
             throw error;
-        } finally {
-            setLoading(false);
         }
     };
 
     const borrarGrupo = async (id: number) => {
         if (!token) return;
         try {
-            setLoading(true);
-            await eliminarGrupoPrivilegios(token, id);
+            await conLoading(async () => {
+                await eliminarGrupoPrivilegios(token, id);
+                await cargarGrupos();
+                setGrupoSeleccionado(null);
+            });
             showAlert('Grupo de privilegios eliminado correctamente', 'success');
-            await cargarGrupos();
-            setGrupoSeleccionado(null);
         } catch (error) {
             console.error("Error al eliminar grupo de privilegios:", error);
             showAlert('No se pudo eliminar el grupo de privilegios', 'error');
             throw error;
-        } finally {
-            setLoading(false);
         }
     };
 

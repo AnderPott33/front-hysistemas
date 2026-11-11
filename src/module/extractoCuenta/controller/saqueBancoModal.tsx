@@ -169,7 +169,7 @@ const SaqueBancoModal = ({
         monedaId:  monedaBaseId,
         cuentaId: 0,
         valor: 0,
-        fecha: fechaMovimiento ? formatarDataInput(fechaMovimiento) : "",
+        fecha: fechaMovimiento ? fechaMovimiento : "",
         observacion: "",
     });
 

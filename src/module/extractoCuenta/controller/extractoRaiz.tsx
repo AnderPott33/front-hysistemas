@@ -9,6 +9,7 @@ import { useEmpresa } from "../../empresa/hooks/useEmpresa";
 import { useCaja } from "../../../context/CajaContext";
 import ExtractoTable from "./extractoTable";
 import GlobalTooltip from "../../../components/utils/GlobalTooltip";
+import Loading from "../../../components/utils/Loading";
 import { ArrowDownToLine, ArrowLeftRight, ArrowUpFromLine, ChevronDown, CornerUpLeft, Plus } from "lucide-react";
 import PageBanner from "../../../components/utils/Banner";
 import SaqueBancoModal from "./saqueBancoModal";
@@ -172,7 +173,8 @@ const ExtractoRaiz = () => {
         saldosAnteriores,
         totalesFormaPago,
         registrarAsientosOperacion,
-        cancelarAsientoOperacion
+        cancelarAsientoOperacion,
+        loading,
     } = useExtractoCuenta();
     const { cajas, cargarCajas, cargarCajaPorId } = useCajas();
     const { caja } = useCaja();
@@ -202,7 +204,6 @@ const ExtractoRaiz = () => {
         cargarDatosBasicos();
     }, []);
 
-
     const handleSeleccionarOperacion = (tipo: TipoOperacionBanco) => {
         if (tipo === "SAQUE_BANCO") {
             setModalSaque(true)
@@ -213,18 +214,20 @@ const ExtractoRaiz = () => {
         };
     };
 
-        const navigate = useNavigate();
+    const navigate = useNavigate();
 
-// Sin caja no se puede registrar un financiero: se redirige a la gestión de cajas
-useEffect(() => {
-    if (!caja) {
-        showAlert("Debe tener una caja abierta para consultar extracto", "warning");
-        navigate("/finanzas/cajas", { replace: true });
-    }
-}, [caja]);
+    // Sin caja no se puede registrar un financiero: se redirige a la gestión de cajas
+    useEffect(() => {
+        if (!caja) {
+            showAlert("Debe tener una caja abierta para consultar extracto", "warning");
+            navigate("/finanzas/cajas", { replace: true });
+        }
+    }, [caja]);
 
     return (
         <>
+            {loading && <Loading />}
+
             <PageBanner
                 icon={<CornerUpLeft />}
                 title="Extracto Cuenta"

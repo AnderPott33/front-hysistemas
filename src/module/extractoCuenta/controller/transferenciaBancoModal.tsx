@@ -216,7 +216,7 @@ const TransferenciaBancoModal = ({
         monedaOrigenId: monedaBaseId,
         monedaDestinoId: monedaBaseId,
         valor: 0,
-        fecha: fechaMovimiento ? formatarDataInput(fechaMovimiento) : "",
+        fecha: fechaMovimiento ? fechaMovimiento : "",
         observacion: "",
     });
 

@@ -23,6 +23,7 @@ import { useCategorias } from "../../categorias/hooks/useCategorias";
 import FormSalidaTarjeta from "./FormSalidaTarjeta";
 import ModalGeneral from "../../../components/utils/ModalGeneral";
 import InputERP from "../../../components/utils/InputERP";
+import Loading from "../../../components/utils/Loading";
 import { useNavigate } from "react-router-dom";
 
 /* ------------------------------------------------------------------ */
@@ -55,14 +56,14 @@ const valorNeto = (f: InterfaceBaja): number =>
 /* ------------------------------------------------------------------ */
 
 const FormFinanciero = () => {
-    const { empresa, cargarEmpresa } = useEmpresa();
-    const { monedasA, cargarMonedasActivas, tiposCambio, cargarTiposCambio } = useMoneda();
+    const { empresa, cargarEmpresa, loading: loadingEmpresa } = useEmpresa();
+    const { monedasA, cargarMonedasActivas, tiposCambio, cargarTiposCambio, loading: loadingMonedas } = useMoneda();
     const { operaciones, cargarOperaciones } = useOperacion();
-    const { cuentas, cargarCuentas, cargarCuentaPorId } = useCuentas();
-    const { subcategorias, cargarSubcategorias } = useCategorias();
+    const { cuentas, cargarCuentas, cargarCuentaPorId, loading: loadingCuentas } = useCuentas();
+    const { subcategorias, cargarSubcategorias, loading: loadingCategorias } = useCategorias();
     const { personas, cargarPersonas, cargarPersonaId } = usePersona();
     const {
-        loading,
+        loading: loadingFinanciero,
         guardarFinancieroFn,
         cancelarFinancieroFn,
         financieros,
@@ -73,6 +74,11 @@ const FormFinanciero = () => {
     const { caja } = useCaja();
     const { tienePermiso } = usePermisos();
     const [buscador, setBuscador] = useState<number | null>(null);
+
+    // Overlay y botones: se bloquean mientras cualquier hook de la página esté cargando.
+    // Si useOperacion o usePersona exponen su propio `loading`, sumalos aquí.
+    const cargando =
+        loadingFinanciero || loadingEmpresa || loadingMonedas || loadingCuentas || loadingCategorias;
 
     const monedaBase: InterfaceMoneda | null = monedasA.find((e: InterfaceMoneda) => e.id === empresa?.moneda_base) || null;
     const operacionesBaja: InterfaceOperacionBaja[] = operaciones.filter((e: InterfaceOperacionBaja) => e.modulo === 'Financiero');
@@ -291,7 +297,7 @@ const FormFinanciero = () => {
 
     // Ctrl+Enter y el botón Guardar usan esta misma lógica
     const abrirCajaOGuardar = () => {
-        if (hayModalAbierto || movimientoCancelado) return;
+        if (hayModalAbierto || movimientoCancelado || cargando) return;
 
         const errorBajas = validarBajas() ?? validarTasas();
         if (errorBajas) {
@@ -319,7 +325,7 @@ const FormFinanciero = () => {
 
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [hayModalAbierto, formMovimiento, formBaja, formBajaCaja, tiposCambio]);
+    }, [hayModalAbierto, formMovimiento, formBaja, formBajaCaja, tiposCambio, cargando]);
 
     const eliminarLinea = (id: string) => {
         const eliminando = formBaja.filter(e => e.id != id);
@@ -394,18 +400,20 @@ const FormFinanciero = () => {
         }
     };
 
-        const navigate = useNavigate();
+    const navigate = useNavigate();
 
-// Sin caja no se puede registrar un financiero: se redirige a la gestión de cajas
-useEffect(() => {
-    if (!caja) {
-        showAlert("Debe tener una caja abierta para registrar pago", "warning");
-        navigate("/finanzas/cajas", { replace: true });
-    }
-}, [caja]);
+    // Sin caja no se puede registrar un financiero: se redirige a la gestión de cajas
+    useEffect(() => {
+        if (!caja) {
+            showAlert("Debe tener una caja abierta para registrar pago", "warning");
+            navigate("/finanzas/cajas", { replace: true });
+        }
+    }, [caja]);
 
     return (
         <>
+            {cargando && <Loading />}
+
             <div className="flex gap-3 items-stretch px-2 pb-2">
                 <div className="shrink-0">
                     <FormEncabezado
@@ -562,7 +570,7 @@ useEffect(() => {
                 ) : (
                     <button
                         onClick={() => abrirCajaOGuardar()}
-                        disabled={loading || formBaja.length === 0}
+                        disabled={cargando || formBaja.length === 0}
                         className="flex justify-center text-xs items-center gap-2 px-2 py-1.5 font-semibold rounded-xl bg-mi-gradient text-white shadow-md shadow-mi-tercera/30 hover:shadow-lg hover:shadow-mi-tercera/40 transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {movimientoGuardado ? (
@@ -583,7 +591,7 @@ useEffect(() => {
                     <button
                         type="button"
                         onClick={abrirModalCancelar}
-                        disabled={loading}
+                        disabled={cargando}
                         className="flex justify-center text-xs items-center gap-2 px-2 py-1.5 font-semibold rounded-xl border border-rose-300 text-rose-600 hover:bg-rose-50 transition-all duration-200 active:scale-[0.98] disabled:opacity-50"
                     >
                         <Ban size={16} />

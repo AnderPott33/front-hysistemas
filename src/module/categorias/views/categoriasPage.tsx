@@ -3,6 +3,7 @@ import ActionBanner from "../../../components/utils/ActionBanner";
 import PageBanner from "../../../components/utils/Banner";
 import { useEffect, useState } from "react";
 import GlobalTooltip from "../../../components/utils/GlobalTooltip";
+import Loading from "../../../components/utils/Loading";
 import { useCategorias } from "../hooks/useCategorias";
 import { CategoriasList } from "../components/CategoriasList";
 import { SubcategoriasList } from "../components/SubcategoriasList";
@@ -18,6 +19,7 @@ const CategoriasPage = () => {
     const {
         categorias, cargarCategorias, categoriaSeleccionada, cargarCategoriaPorId, guardarCategoria,
         subcategorias, cargarSubcategorias, subcategoriaSeleccionada, cargarSubcategoriaPorId, guardarSubcategoria,
+        loading,
     } = useCategorias();
 
     useEffect(() => {
@@ -57,6 +59,8 @@ const CategoriasPage = () => {
 
     return (
         <>
+            {loading && <Loading />}
+
             <PageBanner
                 icon={<Tags />}
                 title="Categorías"
