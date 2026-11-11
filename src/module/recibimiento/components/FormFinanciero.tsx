@@ -278,7 +278,7 @@ const FormFinanciero = () => {
             { debito: 0, credito: 0 }
         );
 
-        const diferencia = redondear(totales.debito - totales.credito);
+        const diferencia = redondear(totales.credito - totales.debito);
 
         // Solo devuelve valor si el débito es mayor que el crédito
         return diferencia > 0 ? diferencia : 0;
