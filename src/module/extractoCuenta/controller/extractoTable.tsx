@@ -326,6 +326,8 @@ const ExtractoTable = ({
 
     const saldoFinal = ultimoSaldo ?? saldoApertura + totalEntradas - totalSalidas;
 
+    console.log(datosExtracto);
+    
     return (
         <div className="flex flex-col text-sm bg-mi-segunda/15">
             <ExtractoHeader
@@ -364,12 +366,12 @@ const ExtractoTable = ({
                         width: "70px",
                         cell: (e) => e.asiento_id ?? "",
                     },
-                    {
+                    /* {
                         header: "Ref",
                         accessor: "movimiento_id",
                         width: "70px",
                         cell: (e) => e.movimiento_id ?? "",
-                    },
+                    }, */
                     {
                         header: "Fecha",
                         accessor: "fecha",
@@ -377,7 +379,7 @@ const ExtractoTable = ({
                         align: "center",
                         cell: (e) => (e.fecha ? formatarData(e.fecha) : ""),
                     },
-                    {
+                    /* {
                         header: "Descripción",
                         accessor: "descripcion",
                         width: "150px",
@@ -386,18 +388,18 @@ const ExtractoTable = ({
                                 {e.descripcion ?? "-"}
                             </span>
                         ),
-                    },
+                    }, */
                     {
                         header: "Detalle",
                         accessor: "descripcion_baja",
-                        width: "300px",
+                        width: "400px",
                         cell: (e) => e.descripcion_baja ?? "-",
                     },
                     {
                         header: "Entrada",
                         accessor: "entrada",
                         align: "right",
-                        width: "150px",
+                        width: "100px",
                         cell: (e) => {
                             const valor = aNumero(e.entrada);
                             if (valor === null) return null;
@@ -413,7 +415,7 @@ const ExtractoTable = ({
                         header: "Salida",
                         accessor: "salida",
                         align: "right",
-                        width: "150px",
+                        width: "100px",
                         cell: (e) => {
                             const valor = aNumero(e.salida);
                             if (valor === null) return null;
@@ -429,7 +431,7 @@ const ExtractoTable = ({
                         header: "Saldo",
                         accessor: "saldo",
                         align: "right",
-                        width: "150px",
+                        width: "100px",
                         cell: (e) => {
                             const valor = aNumero(e.saldo);
                             if (valor === null) return null;
@@ -437,9 +439,20 @@ const ExtractoTable = ({
                         },
                     },
                     {
+                        header: "Caja",
+                        accessor: "caja_movimiento",
+                        align: "center",
+                        width: "80px",
+                        /* cell: (e) => {
+                            const valor = aNumero(e.saldo);
+                            if (valor === null) return null;
+                            return formatarMoeda(valor, buscarMoneda(e.moneda_id));
+                        }, */
+                    },
+                    {
                         header: "Usuario",
                         accessor: "creado_por_nombre",
-                        width: "160px",
+                        width: "100px",
                         cell: (e) => {
                             const nombre = e.creado_por_nombre ?? (e.creado_por != null ? `#${e.creado_por}` : "-");
                             return (

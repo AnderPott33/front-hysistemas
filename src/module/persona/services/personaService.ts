@@ -60,20 +60,25 @@ export const actualizarPersona = async (token: string, persona: InterfacePersona
 
 /** Respuesta cruda de https://ruc.sun.com.py/api/ruc/:ruc */
 export interface InterfaceRucSet {
+    data: {
+        doc: number;
+        dv: number;
+        esEntidadPublica: boolean;
+        esPersonaJuridica: boolean;
+        estado: string;
+        razonSocial: string;
+        ruc: string;
+    },
+    message: string;
+}
+export interface InterfaceRucSetLimpio {
+    doc: number;
+    dv: number;
+    esEntidadPublica: boolean;
+    esPersonaJuridica: boolean;
+    estado: string;
+    razonSocial: string;
     ruc: string;
-    dv: string;
-    fullRuc: string;
-    name: string;
-    active: boolean;
-    state: string;
-    siara?: {
-        group?: string;
-        category?: string;
-        legalType?: string;
-        department?: string;
-        city?: string;
-        status?: string;
-    };
 }
 
 /** Datos listos para cargar en FormPersonas */
@@ -82,34 +87,38 @@ export interface InterfaceDatosPersonaRuc {
     nombre: string;
     razon_social: string;
     ruc: string;
+    cedula: number | null;
     categoria: string;
     departamento: string;
     ciudad: string;
     activo: boolean;
 }
 
-const normalizarRuc = (ruc: string) => ruc.replace(/\D/g, "");
+/* const normalizarRuc = (ruc: string) => ruc.replace(/\D/g, ""); */
 
-export const buscarRuc = async (ruc: string): Promise<InterfaceRucSet> => {
-    const rucLimpio = normalizarRuc(ruc);
-    if (!rucLimpio) throw new Error("Ingrese un RUC válido");
+export const buscarRuc = async (ruc: string): Promise<InterfaceRucSetLimpio> => {
 
-    const result = await axios.get<InterfaceRucSet>(`${API}/api/ruc/${rucLimpio}`);
-    return result.data;
+
+    const result = await axios.get<InterfaceRucSet>(`${API}/api/ruc/${ruc}`);
+    console.log(result.data?.data);
+
+    return result.data?.data;
 };
 
 /** Convierte la respuesta del SET a los campos del formulario de personas */
-export const mapearRucAPersona = (datos: InterfaceRucSet): InterfaceDatosPersonaRuc => {
-    const esJuridica = datos.siara?.group?.toLowerCase().includes("jurídica") ?? false;
+export const mapearRucAPersona = (datos: InterfaceRucSetLimpio): InterfaceDatosPersonaRuc => {
+    const esJuridica = datos.esPersonaJuridica;
+    /* console.log(datos); */
 
     return {
         tipo_persona: esJuridica ? "Jurídica" : "Física",
-        nombre: datos.name ?? "",
-        razon_social: esJuridica ? (datos.name ?? "") : "",
-        ruc: datos.fullRuc ?? datos.ruc,
-        categoria: datos.siara?.category ?? "",
-        departamento: datos.siara?.department ?? "",
-        ciudad: datos.siara?.city ?? "",
-        activo: datos.active,
+        nombre: datos.razonSocial ?? "",
+        razon_social: esJuridica ? (datos.razonSocial ?? "") : "",
+        ruc: datos.ruc ?? datos.ruc,
+        cedula: !esJuridica ? datos.doc : null,
+        categoria: "Cliente",
+        departamento: "",
+        ciudad: "",
+        activo: datos.estado ? true : false,
     };
 };

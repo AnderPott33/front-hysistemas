@@ -157,6 +157,27 @@ export const useMoneda = () => {
         }
     };
 
+        // Guarda un lote de cotizaciones como una sola operación: un solo overlay, un solo toast y una sola recarga
+    const guardarTiposCambioLote = async (items: InterfaceTipoCambio[]): Promise<boolean> => {
+        if (!token) return false;
+        try {
+            await conLoading(async () => {
+                await Promise.all(items.map(item => guardarTipoCambio(token, item)));
+                await refrescarCotizacion();
+                const lista = await obtenerTiposCambio(token);
+                setTiposCambio(lista);
+                // Verifica el estado del día ya con la lista actualizada, dentro de la misma operación
+                await hayCotizacion().catch(() => undefined);
+            });
+            showAlert('Cotizaciones actualizadas', 'success');
+            return true;
+        } catch (error) {
+            console.error("Error al guardar lote de tipos de cambio:", error);
+            showAlert('No se pudieron guardar las cotizaciones', 'error');
+            return false;
+        }
+    };
+
     const obtenerCotizacion = async (origen: string, destino: string): Promise<number | null> => {
         try {
             return await obtenerCotizacionPorPar(origen, destino);
@@ -191,6 +212,7 @@ export const useMoneda = () => {
         tipoCambioSeleccionado,
         cargarTipoCambioPorId,
         guardarTipoCambioFn,
+        guardarTiposCambioLote,
         obtenerCotizacion,
         loading,
         buscarCambioVigente,

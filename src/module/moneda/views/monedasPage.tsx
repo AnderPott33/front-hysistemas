@@ -27,7 +27,7 @@ const MonedasPage = () => {
     const {
         monedas, cargarMonedas, monedaSeleccionada, cargarMonedaPorId,
         obtenerSimbolo, obtenerCotizacion, guardarMonedaFn,
-        tiposCambio, cargarTiposCambio, guardarTipoCambioFn,
+        tiposCambio, cargarTiposCambio, guardarTiposCambioLote,
         loading,
     } = useMoneda();
 
@@ -42,13 +42,9 @@ const MonedasPage = () => {
     }, []);
 
     // Al guardar, se recarga la lista y el formulario vuelve a modo "nuevo"
-    const guardarCotizacion = async (items: any[]) => {
-        for (const item of items) {
-            await guardarTipoCambioFn(item);
-        }
-        showAlert('Cotizaciones actualizadas', 'success');
-        await cargarTiposCambio();
-        setCotizacionSelect(null);
+     const guardarCotizacion = async (items: any[]) => {
+        const ok = await guardarTiposCambioLote(items);
+        if (ok) setCotizacionSelect(null);
     };
 
     const activarBar = (tab: string) => {

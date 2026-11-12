@@ -43,6 +43,9 @@ const formInicial = {
     observacion: "",
 };
 
+/** Quita el dígito verificador: "6357507-8" => "6357507" */
+const rucSinDv = (ruc: string): string => ruc.split("-")[0].replace(/\D/g, "");
+
 const FormPersonas = ({ PersonaSelect, guardarPersona }: InterfaceFormPersonas) => {
     const [formData, setFormData] = useState<InterfacePersona>(formInicial as InterfacePersona);
     const [buscadorRuc, setBuscadorRuc] = useState<string>("");
@@ -93,9 +96,9 @@ const FormPersonas = ({ PersonaSelect, guardarPersona }: InterfaceFormPersonas) 
         guardarPersona(formData);
     };
 
-    /** Busca el RUC, pide confirmación y luego completa los datos del SET sin pisar lo que ya cargó el usuario */
+    /** Busca el RUC (sin DV), pide confirmación y luego completa los datos del SET */
     const buscar = async () => {
-        const ruc = buscadorRuc.replace(/\D/g, "");
+        const ruc = rucSinDv(buscadorRuc);
         if (!ruc) {
             showAlert("Ingrese un RUC para buscar", "warning");
             return;
@@ -128,12 +131,14 @@ const FormPersonas = ({ PersonaSelect, guardarPersona }: InterfaceFormPersonas) 
             tipo_persona: encontrado.tipo_persona,
             nombre: encontrado.nombre,
             razon_social: encontrado.razon_social,
+            cedula: encontrado.cedula,
             ruc: encontrado.ruc,
             departamento: encontrado.departamento,
             ciudad: encontrado.ciudad,
             activo: encontrado.activo,
         }));
-        setBuscadorRuc(encontrado.ruc);
+        // El campo de búsqueda usa el RUC sin DV
+        setBuscadorRuc(rucSinDv(encontrado.ruc));
     };
 
     return (
@@ -155,7 +160,7 @@ const FormPersonas = ({ PersonaSelect, guardarPersona }: InterfaceFormPersonas) 
                 <div>
                     <InputERP
                         label="Buscar RUC SET"
-                        type="number"
+                        type="text"
                         value={buscadorRuc}
                         showSearchList={false}
                         disabled={buscandoRuc}
@@ -163,7 +168,7 @@ const FormPersonas = ({ PersonaSelect, guardarPersona }: InterfaceFormPersonas) 
                         searchTooltip="Buscar en el SET"
                         onSearchClick={buscar}
                         onEnterPress={buscar}
-                        data-tooltip={"Ingrese el RUC sin DV para buscar"}
+                        data-tooltip={"Ingrese el RUC con o sin DV para buscar"}
                         onChange={(e) => setBuscadorRuc(String(e))}
                     />
                 </div>
