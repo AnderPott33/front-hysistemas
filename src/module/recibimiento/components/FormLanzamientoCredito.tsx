@@ -368,7 +368,7 @@ const FormLanzamientoCredito = ({
                             onClick={cancelar}
                             className="flex justify-center items-center gap-2 px-4 py-2 font-semibold rounded-xl border border-mi-primera/20 text-mi-cuarta hover:bg-mi-primera/5 transition-all"
                         >
-                            Cerrar (Esc)
+                            Cerrar
                         </button>
                         <button
                             type="button"
@@ -376,7 +376,7 @@ const FormLanzamientoCredito = ({
                             className="flex justify-center items-center gap-2 px-4 py-2 font-semibold rounded-xl bg-mi-gradient text-white shadow-md shadow-mi-tercera/30 hover:shadow-lg hover:shadow-mi-tercera/40 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none active:scale-[0.98]"
                         >
                             <Check size={18} />
-                            Guardar (F10)
+                            Guardar
                         </button>
                     </div>
                 }
