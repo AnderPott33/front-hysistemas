@@ -71,6 +71,7 @@ export interface InterfaceRucSet {
     },
     message: string;
 }
+
 export interface InterfaceRucSetLimpio {
     doc: number;
     dv: number;
@@ -94,21 +95,14 @@ export interface InterfaceDatosPersonaRuc {
     activo: boolean;
 }
 
-/* const normalizarRuc = (ruc: string) => ruc.replace(/\D/g, ""); */
-
 export const buscarRuc = async (ruc: string): Promise<InterfaceRucSetLimpio> => {
-
-
     const result = await axios.get<InterfaceRucSet>(`${API}/api/ruc/${ruc}`);
-    console.log(result.data?.data);
-
     return result.data?.data;
 };
 
 /** Convierte la respuesta del SET a los campos del formulario de personas */
 export const mapearRucAPersona = (datos: InterfaceRucSetLimpio): InterfaceDatosPersonaRuc => {
     const esJuridica = datos.esPersonaJuridica;
-    /* console.log(datos); */
 
     return {
         tipo_persona: esJuridica ? "Jurídica" : "Física",

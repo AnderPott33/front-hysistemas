@@ -1,14 +1,18 @@
 import { List, PlusCircle, Users } from "lucide-react";
 import PageBanner from "../../../components/utils/Banner";
 import ActionBanner from "../../../components/utils/ActionBanner";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Loading from "../../../components/utils/Loading";
 import { usePermisos } from "../../../context/PermisosContext";
 import { useNavigate } from "react-router-dom";
 import GlobalTooltip from "../../../components/utils/GlobalTooltip";
 import { usePersona } from "../hooks/usePersona";
+import { useMoneda } from "../../moneda/hooks/useMoneda";
+import { useEmpresa } from "../../empresa/hooks/useEmpresa";
 import { PersonasList } from "../components/PersonasList";
 import FormPersonas from "../components/FormPersonas";
+import ModalConsultaCredito from "../components/ModalConsultaCredito";
+import type { InterfacePersona } from "../interfaces/InterfacePersona";
 
 const PersonasPage = () => {
     const navigate = useNavigate();
@@ -20,20 +24,32 @@ const PersonasPage = () => {
         guardarPersona,
         loading,
     } = usePersona();
+    const { monedasA, cargarMonedasActivas, tiposCambio, cargarTiposCambio } = useMoneda();
+    const { empresa, cargarEmpresa } = useEmpresa();
 
     const [activeTab, setActiveTab] = useState('lista');
+    const [personaCredito, setPersonaCredito] = useState<InterfacePersona | null>(null);
+
+    // Moneda base: la que define la empresa
+    const monedaBase = useMemo(
+        () => monedasA.find(m => Number(m.id) === Number(empresa?.moneda_base)) ?? null,
+        [monedasA, empresa]
+    );
 
     //Verificación de Privilegios
     const { tienePermiso } = usePermisos();
     const puedeVerPagina = tienePermiso("pagina_personas");
-    const puedeAgregar = tienePermiso("agregar_personas");
     const puedeEditar = tienePermiso("editar_personas");
 
-    // Revisá esta condición: antes era `1 ? puedeEditar : puedeAgregar`
     const puedeGuardar = puedeEditar;
 
     useEffect(() => {
-        cargarPersonas();
+        Promise.all([
+            cargarPersonas(),
+            cargarMonedasActivas(),
+            cargarTiposCambio(),
+            cargarEmpresa(),
+        ]);
     }, []);
 
     useEffect(() => {
@@ -84,6 +100,7 @@ const PersonasPage = () => {
                                             datos={personas}
                                             cargarPersona={cargarPersonaId}
                                             activeBar={activarBar}
+                                            onCredito={setPersonaCredito}
                                         />
                                     </div>
                                 )
@@ -91,6 +108,17 @@ const PersonasPage = () => {
                         ]}
                     />
                 }
+            />
+
+            <ModalConsultaCredito
+                isOpen={!!personaCredito}
+                onClose={() => setPersonaCredito(null)}
+                personaId={personaCredito ? Number(personaCredito.id) : 0}
+                personaNombre={personaCredito?.nombre ?? ""}
+                soloConsulta
+                monedas={monedasA}
+                monedaBase={monedaBase}
+                datosCambios={tiposCambio}
             />
 
             <GlobalTooltip />

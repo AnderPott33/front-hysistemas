@@ -1,4 +1,4 @@
-import { Key, List, Pen, Plus } from "lucide-react";
+import { List, Pen, Plus, Wallet } from "lucide-react";
 import DataTable from "../../../components/utils/DataTable";
 import type { InterfacePersona } from "../interfaces/InterfacePersona";
 import { usePermisos } from "../../../context/PermisosContext";
@@ -8,9 +8,10 @@ interface InterfacePersonasList {
     datos: InterfacePersona[];
     cargarPersona: (id: number) => void;
     activeBar: (tab: string) => void;
+    onCredito: (persona: InterfacePersona) => void;
 }
 
-export const PersonasList = ({ datos, cargarPersona, activeBar }: InterfacePersonasList) => {
+export const PersonasList = ({ datos, cargarPersona, activeBar, onCredito }: InterfacePersonasList) => {
 
     // Verificación de privilegios
     const { tienePermiso } = usePermisos();
@@ -18,7 +19,7 @@ export const PersonasList = ({ datos, cargarPersona, activeBar }: InterfacePerso
     const puedeEditar = tienePermiso("editar_personas");
     const { isAdmin } = useAuth();
 
-    const editarPersona = (id: Number) => {
+    const editarPersona = (id: number) => {
         cargarPersona(Number(id));
         activeBar('registro');
     };
@@ -27,7 +28,6 @@ export const PersonasList = ({ datos, cargarPersona, activeBar }: InterfacePerso
         cargarPersona(0);
         activeBar('registro');
     };
-/* console.log(datos); */
 
     return (
         <div className="space-y-4">
@@ -39,7 +39,7 @@ export const PersonasList = ({ datos, cargarPersona, activeBar }: InterfacePerso
                     </div>
                     <div className="flex flex-col">
                         <span className="font-bold text-lg text-mi-cuarta leading-tight">Lista de Personas</span>
-                        <span className="text-xs text-mi-cuarta/50">Administra los Personas del sistema</span>
+                        <span className="text-xs text-mi-cuarta/50">Administra las personas del sistema</span>
                     </div>
                 </div>
 
@@ -63,12 +63,10 @@ export const PersonasList = ({ datos, cargarPersona, activeBar }: InterfacePerso
                     showFilters={false}
                     columns={[
                         { header: "#", accessor: "id", align: "start", sortable: true },
-                        
                         { header: "Nombre", accessor: "nombre", align: "start", sortable: true },
                         { header: "Cédula", accessor: "cedula", align: "start", sortable: true },
                         { header: "RUC", accessor: "ruc", align: "start", sortable: true },
                         { header: "Teléfono", accessor: "telefono", align: "start", sortable: true },
-                        
                         {
                             header: "Estado",
                             accessor: "activo",
@@ -98,17 +96,22 @@ export const PersonasList = ({ datos, cargarPersona, activeBar }: InterfacePerso
                                 <div className="flex gap-1.5 justify-center items-center">
                                     <button
                                         type="button"
+                                        onClick={() => onCredito(e)}
+                                        disabled={!puedeEditar}
+                                        data-tooltip={puedeEditar ? 'Consultar crédito' : 'No tienes los privilegios necesarios'}
+                                        className="p-2 cursor-pointer text-mi-segunda hover:bg-mi-primera/15 hover:text-mi-tercera rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                    >
+                                        <Wallet size={18} />
+                                    </button>
+                                    <button
+                                        type="button"
                                         onClick={() => editarPersona(Number(e.id))}
                                         disabled={!puedeEditar || (e.id == 1 && !isAdmin)}
-                                        data-tooltip={
-                                            puedeEditar
-                                                ? 'Editar Persona' : 'No tienes los privilegios necesarios'
-                                        }
+                                        data-tooltip={puedeEditar ? 'Editar Persona' : 'No tienes los privilegios necesarios'}
                                         className="p-2 cursor-pointer text-mi-segunda hover:bg-mi-primera/15 hover:text-mi-tercera rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                                     >
                                         <Pen size={18} />
                                     </button>
-
                                 </div>
                             )
                         },
@@ -117,4 +120,4 @@ export const PersonasList = ({ datos, cargarPersona, activeBar }: InterfacePerso
             </div>
         </div>
     );
-}
+};

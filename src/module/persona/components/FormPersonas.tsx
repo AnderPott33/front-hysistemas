@@ -41,6 +41,7 @@ const formInicial = {
     categoria: "Cliente",
     activo: true,
     observacion: "",
+    limite_credito: null,
 };
 
 /** Quita el dígito verificador: "6357507-8" => "6357507" */
@@ -82,6 +83,9 @@ const FormPersonas = ({ PersonaSelect, guardarPersona }: InterfaceFormPersonas) 
                 categoria: PersonaSelect.categoria ?? "",
                 activo: Boolean(PersonaSelect.activo),
                 observacion: PersonaSelect.observacion ?? "",
+                limite_credito: PersonaSelect.limite_credito != null
+                    ? Number(PersonaSelect.limite_credito)
+                    : null,
             });
         } else {
             setFormData(formInicial as InterfacePersona);
@@ -290,6 +294,19 @@ const FormPersonas = ({ PersonaSelect, guardarPersona }: InterfaceFormPersonas) 
                             phoneMask="+595 ### ### ###"
                             disabled={!puedeGuardar}
                             onChange={(e) => setFormData({ ...formData, telefono: e })}
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <InputERP
+                            type="number"
+                            label="Límite de crédito (moneda base)"
+                            value={formData.limite_credito}
+                            disabled={!puedeGuardar}
+                            onChange={(e) => setFormData({
+                                ...formData,
+                                limite_credito: e === "" || e == null ? null : Number(e),
+                            })}
                         />
                     </div>
                 </div>

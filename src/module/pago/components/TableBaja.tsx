@@ -6,7 +6,7 @@ import type { InterfaceCuenta } from "../../cuentas/interfaces/InterfaceCuenta";
 import type { InterfacePersona } from "../../persona/interfaces/InterfacePersona";
 import DataTable from "../../../components/utils/DataTable";
 import Tarjeta from "../../../components/utils/Tarjeta";
-import { TrendingUp, Banknote, ChevronDown, ChevronUp, Coins, FileText, Landmark, Receipt, Trash2, CreditCard } from "lucide-react";
+import { TrendingUp, Banknote, ChevronDown, ChevronUp, Coins, FileText, Landmark, Receipt, Trash2, CreditCard, Wallet } from "lucide-react";
 import { formatarData, formatarMoeda } from "../../../components/utils/Formatadores";
 import { Flag } from "../../../context/FlagsContext";
 import { useState } from "react";
@@ -27,6 +27,7 @@ interface InterfaceTableBaja {
     abrirModal: () => void;
     abrirModalBanco: () => void;
     abrirModalTarjeta: () => void;
+    abrirModalCredito: (naturaleza: 'Crédito' | 'Débito') => void;
     eliminarPagoCaja: () => void;
     eliminarLinea: (id: string) => void;
 }
@@ -114,6 +115,7 @@ const TableBaja = ({
     eliminarLinea,
     eliminarPagoCaja,
     abrirModalTarjeta,
+    abrirModalCredito,
     datosCategorias,
     datosPersonas,
     datosBajaCaja,
@@ -362,6 +364,14 @@ const TableBaja = ({
                                 <TrendingUp size={15} />
                                 Gasto Eventual
                             </button>
+                            <button
+                                type="button"
+                                onClick={() => abrirModalCredito("Débito")}
+                                className="flex justify-center items-center gap-2 text-xs px-2.5 py-1 font-semibold rounded-xl bg-mi-segunda text-white border border-mi-segunda/95 hover:bg-mi-segunda/95 transition-all duration-200 active:scale-[0.98]"
+                            >
+                                <Wallet size={15} />
+                                Crédito
+                            </button>
                             </div>
                         </div>
                     }
@@ -401,6 +411,14 @@ const TableBaja = ({
                                 >
                                     <CreditCard size={15} />
                                     Tarjeta
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => abrirModalCredito("Crédito")}
+                                    className="flex justify-center items-center gap-2 text-xs px-2.5 py-1 font-semibold rounded-xl bg-mi-segunda text-white border border-mi-segunda/95 hover:bg-mi-segunda/95 transition-all duration-200 active:scale-[0.98]"
+                                >
+                                    <Wallet size={15} />
+                                    Crédito
                                 </button>
                             </div>
                             <div className="flex justify-center items-center">

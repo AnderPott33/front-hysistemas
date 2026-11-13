@@ -56,6 +56,7 @@ export const useFinanciero = () => {
             });
         } catch (error) {
             console.error("Error al procesar financiero:", error);
+            throw error;
         }
     };
 

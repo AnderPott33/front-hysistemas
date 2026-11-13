@@ -79,3 +79,10 @@ export interface InterfacePayload {
     formBaja: InterfaceBaja[];
     formBajaCaja: InterfaceBajaCaja[];
 }
+
+/** Operación y forma de pago de los lanzamientos de crédito de persona */
+export const OPERACION_LANZAMIENTO_CREDITO = 'LANZAMIENTO_CREDITO';
+export const FORMA_PAGO_LANZAMIENTO_CREDITO = 'Lanzamiento Crédito Persona';
+
+export const esLanzamientoCredito = (b: { operacion?: string | null }): boolean =>
+    b?.operacion === OPERACION_LANZAMIENTO_CREDITO;

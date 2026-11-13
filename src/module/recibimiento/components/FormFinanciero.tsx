@@ -6,6 +6,7 @@ import { usePermisos } from "../../../context/PermisosContext";
 import { useEmpresa } from "../../empresa/hooks/useEmpresa";
 import { useMoneda } from "../../moneda/hooks/useMoneda";
 import type { InterfaceBaja, InterfaceBajaCaja, InterfaceDocumento, InterfaceMovimiento, InterfacePayload } from "../interfaces/interfaceRecibimiento";
+import { esLanzamientoCredito } from "../interfaces/interfaceRecibimiento";
 import { useCuentas } from "../../cuentas/hooks/useCuentas";
 import FormEncabezado from "./FormEncabezado";
 import FormBaja from "./FormIngresoEventual";
@@ -16,11 +17,12 @@ import TableBaja from "./TableBaja";
 import { usePersona } from "../../persona/hooks/usePersona";
 import ModalCaja from "./ModalCaja";
 import FormDepositoBancario from "./FormDepositoBancario";
+import FormEntradaTarjeta from "./FormEntradaTarjeta";
+import FormLanzamientoCredito from "./FormLanzamientoCredito";
 import { Ban, BrushCleaning, Save, RefreshCw } from "lucide-react";
 import { showAlert } from "../../../components/utils/Procesando";
 import { useFinanciero } from "../hooks/useRecibimiento";
 import { useCategorias } from "../../categorias/hooks/useCategorias";
-import FormEntradaTarjeta from "./FormEntradaTarjeta";
 import ModalGeneral from "../../../components/utils/ModalGeneral";
 import InputERP from "../../../components/utils/InputERP";
 import Loading from "../../../components/utils/Loading";
@@ -85,6 +87,12 @@ const obtenerTasa = (cambios: InterfaceTipoCambio[], origen: number, destino: nu
 /** Neto de la línea de baja: valor + intereses - descuento */
 const valorNeto = (f: InterfaceBaja): number =>
     (Number(f.valor) || 0) + (Number(f.interes) || 0) - (Number(f.descuento) || 0);
+
+/** Neto que cubre caja: en créditos, solo el resto no compensado (valor_liquido) */
+const netoParaCaja = (b: InterfaceBaja): number =>
+    esLanzamientoCredito(b)
+        ? Math.max(0, Number(b.valor_liquido) || 0)
+        : valorNeto(b);
 
 /* ------------------------------------------------------------------ */
 /* Componente                                                          */
@@ -158,6 +166,8 @@ const FormFinanciero = () => {
     const [openModalCaja, setOpenModalCaja] = useState(false);
     const [openModalDepositoBancario, setOpenModalDepositoBancario] = useState(false);
     const [openModalTarjeta, setOpenModalTarjeta] = useState(false);
+    const [openModalCredito, setOpenModalCredito] = useState(false);
+    const [naturalezaCredito, setNaturalezaCredito] = useState<'Crédito' | 'Débito'>('Crédito');
     const [openModalCancelar, setOpenModalCancelar] = useState(false);
     const [motivoCancelacion, setMotivoCancelacion] = useState("");
     const [cancelando, setCancelando] = useState(false);
@@ -197,6 +207,11 @@ const FormFinanciero = () => {
     const abrirCerrarModalTarjeta = () => {
         setOpenModalTarjeta(!openModalTarjeta);
     };
+    const abrirModalCredito = (naturaleza: 'Crédito' | 'Débito') => {
+        setNaturalezaCredito(naturaleza);
+        setOpenModalCredito(true);
+    };
+    const cerrarModalCredito = () => setOpenModalCredito(false);
 
     const recibeBuscador = (buscado: number) => {
         setBuscador(buscado);
@@ -238,6 +253,11 @@ const FormFinanciero = () => {
         setFormBaja(prev => [...prev, datos]);
     };
 
+    // Cambia la moneda del encabezado desde el lanzamiento de crédito
+    const cambiarMonedaCredito = (moneda: InterfaceMoneda) => {
+        setFormMovimiento(f => (f ? { ...f, moneda_id: Number(moneda.id) } : f));
+    };
+
     // Restablece el formulario a su estado inicial
     const nuevoFormulario = () => {
         setBuscador(null);
@@ -245,6 +265,7 @@ const FormFinanciero = () => {
         setOpenModalCaja(false);
         setOpenModalDepositoBancario(false);
         setOpenModalTarjeta(false);
+        setOpenModalCredito(false);
         setOpenModalCancelar(false);
         setMotivoCancelacion("");
         setFormMovimiento(undefined);
@@ -266,11 +287,12 @@ const FormFinanciero = () => {
         return redondear(monto * tasa);
     };
 
-    // Valor que deben cubrir las bajas de caja, en la moneda del movimiento: débito - crédito
+    // Valor que deben cubrir las bajas de caja, en la moneda del movimiento: débito - crédito.
+    // En créditos solo cuenta el resto no compensado.
     const calcularValorCaja = (): number => {
         const totales = formBaja.reduce(
             (acc, b) => {
-                const neto = convertirAMovimiento(valorNeto(b), Number(b.moneda_id));
+                const neto = convertirAMovimiento(netoParaCaja(b), Number(b.moneda_id));
                 if (b.naturaleza_financiera === 'Débito') acc.debito += neto;
                 if (b.naturaleza_financiera === 'Crédito') acc.credito += neto;
                 return acc;
@@ -280,7 +302,7 @@ const FormFinanciero = () => {
 
         const diferencia = redondear(totales.credito - totales.debito);
 
-        // Solo devuelve valor si el débito es mayor que el crédito
+        // Solo devuelve valor si el crédito supera al débito
         return diferencia > 0 ? diferencia : 0;
     };
 
@@ -335,7 +357,7 @@ const FormFinanciero = () => {
 
     // Ctrl+Enter no actúa si hay un modal abierto
     const hayModalAbierto =
-        openModalBaja || openModalDepositoBancario || openModalCaja || openModalTarjeta || openModalCancelar;
+        openModalBaja || openModalDepositoBancario || openModalCaja || openModalTarjeta || openModalCredito || openModalCancelar;
 
     // Ctrl+Enter y el botón Guardar usan esta misma lógica
     const abrirCajaOGuardar = () => {
@@ -519,6 +541,22 @@ const FormFinanciero = () => {
                         monedaMovimiento={monedaMovimiento}
                         fechaMovimiento={fechaMovimiento}
                     />
+                    <FormLanzamientoCredito
+                        key={`lanzamiento-credito-${formKey}`}
+                         datosBaja={formBaja}
+                        openModal={openModalCredito}
+                        setOpenModal={cerrarModalCredito}
+                        datosMoneda={monedasA}
+                        naturaleza={naturalezaCredito}
+                        datosPersonas={personas}
+                        cargarPersonaPorId={cargarPersonaId}
+                        datosCambios={tiposCambio}
+                        monedaBase={monedaBase}
+                        monedaMovimiento={monedaMovimiento}
+                        cambiarMoneda={cambiarMonedaCredito}
+                        fechaMovimiento={fechaMovimiento}
+                        recibeBaja={recibeBaja}
+                    />
                     <TableBaja
                         key={`tabla-${formKey}`}
                         datosBaja={formBaja}
@@ -536,6 +574,7 @@ const FormFinanciero = () => {
                         abrirModal={abrirCerrarModalBaja}
                         abrirModalBanco={abrirCerrarModalDeposito}
                         abrirModalTarjeta={abrirCerrarModalTarjeta}
+                        abrirModalCredito={abrirModalCredito}
                         eliminarPagoCaja={eliminarPagoCaja}
                     />
                     <ModalCaja

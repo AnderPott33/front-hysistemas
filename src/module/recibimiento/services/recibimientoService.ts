@@ -34,6 +34,30 @@ export const obtenerFinancieroId = async (token: string, id: number) => {
     }
 };
 
+export interface InterfaceSaldoCreditoPersona {
+    moneda_id: number;
+    codigo: string;
+    nombre: string;
+    simbolo: string;
+    decimales: number;
+    saldo: number;
+}
+
+export interface InterfaceCreditoPersona {
+    persona_id: number;
+    limite_credito: number;
+    deuda_base: number;
+    bloqueado: boolean;
+    saldos: InterfaceSaldoCreditoPersona[];
+}
+
+export const obtenerCreditoPersona = async (token: string, personaId: number): Promise<InterfaceCreditoPersona> => {
+    const result = await axios.get<InterfaceCreditoPersona>(`${API}/api/personas/${personaId}/credito`, {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    return result.data;
+};
+
 export const cancelarFinanciero = async (token: string, id: number, motivo: string) => {
     try {
         const result = await axios.patch(
