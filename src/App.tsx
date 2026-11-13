@@ -26,6 +26,7 @@ import CategoriasPage from './module/categorias/views/categoriasPage';
 import ExtractoCuenta from './module/extractoCuenta/views/extractoCuentaPage';
 import PagoPage from './module/pago/views/pagoPage';
 import PersonasPage from './module/persona/views/personaPage';
+import ExtractoCategoria from './module/extractoCategoria/views/extractoCategoriaPage';
 
 const RUTA_MONEDAS = '/finanzas/monedas';
 
@@ -119,6 +120,11 @@ function AppRoutes() {
       <Route path="/finanzas/extracto-cuenta" element={
         <ProtectedRoute>
           <ExtractoCuenta />
+        </ProtectedRoute>
+      } />
+      <Route path="/finanzas/extracto-categoria" element={
+        <ProtectedRoute>
+          <ExtractoCategoria />
         </ProtectedRoute>
       } />
       <Route path="/finanzas/cajas" element={

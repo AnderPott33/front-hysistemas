@@ -120,6 +120,7 @@ const menuItems: MenuItem[] = [
     subtitle: 'Gestión Financiera',
     subItems: [
       { name: 'Extracto Cuenta', icon: <BriefcaseBusiness className="w-4 h-4" />, path: '/finanzas/extracto-cuenta', permiso: 'pagina_cajas' },
+      { name: 'Extracto Categoria', icon: <Tags className="w-4 h-4" />, path: '/finanzas/extracto-categoria', permiso: 'pagina_cajas' },
       { name: 'Cajas', icon: <BriefcaseBusiness className="w-4 h-4" />, path: '/finanzas/cajas', permiso: 'pagina_cajas' },
       { name: 'Recibir Valores', icon: <CornerUpLeft className="w-4 h-4" />, path: '/finanzas/recibimiento', permiso: 'pagina_recibimiento' },
       { name: 'Pagar Valores', icon: <CornerUpRight className="w-4 h-4" />, path: '/finanzas/pago', permiso: 'pagina_pago' },
