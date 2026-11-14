@@ -4,8 +4,10 @@ import {
     obtenerExtractoCategoria,
     obtenerSaldoCuenta,
     obtenerInformeSubcategorias,
+    obtenerInformeDRE,
     registrarAsientos,
     type FiltrosInformeSubcategorias,
+    type FiltrosInformeDRE,
     cancelarAsiento,
     type AsientoNuevo,
 } from "../services/extractoCategoriaService";
@@ -123,13 +125,12 @@ export const useExtractoCategoria = () => {
         });
     };
 
-    // Abre el informe en una pestaña nueva. La pestaña se abre antes del await
+    // Abre el PDF en una pestaña nueva. La pestaña se abre antes del await
     // para que el navegador no la bloquee como popup.
-    const generarInformeSubcategorias = async (filtros: FiltrosInformeSubcategorias): Promise<void> => {
-        if (!token) throw new Error("No autenticado");
+    const abrirInforme = async (obtener: () => Promise<Blob>): Promise<void> => {
         const ventana = window.open("", "_blank");
         try {
-            const blob = await conLoading(() => obtenerInformeSubcategorias(token, filtros));
+            const blob = await conLoading(obtener);
             const url = URL.createObjectURL(blob);
             if (ventana) {
                 ventana.location.href = url;
@@ -143,6 +144,16 @@ export const useExtractoCategoria = () => {
         }
     };
 
+    const generarInformeSubcategorias = async (filtros: FiltrosInformeSubcategorias): Promise<void> => {
+        if (!token) throw new Error("No autenticado");
+        await abrirInforme(() => obtenerInformeSubcategorias(token, filtros));
+    };
+
+    const generarInformeDRE = async (filtros: FiltrosInformeDRE): Promise<void> => {
+        if (!token) throw new Error("No autenticado");
+        await abrirInforme(() => obtenerInformeDRE(token, filtros));
+    };
+
     return {
         cargarExtractoCategoria,
         registrarAsientosOperacion,
@@ -154,5 +165,6 @@ export const useExtractoCategoria = () => {
         cargarSaldoCuenta,
         loading,
         generarInformeSubcategorias,
+        generarInformeDRE,
     };
 };

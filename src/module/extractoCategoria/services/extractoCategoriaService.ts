@@ -123,6 +123,34 @@ export const obtenerInformeSubcategorias = async (
     }
 };
 
+export interface FiltrosInformeDRE {
+    sucursal_id: number | null;
+    moneda_id: number;
+    anio: number;
+}
+
+/** Descarga el DRE mensual ocurrido (POST, devuelve PDF como blob) */
+export const obtenerInformeDRE = async (
+    token: string,
+    filtros: FiltrosInformeDRE
+): Promise<Blob> => {
+    try {
+        const result = await axios.post(
+            `${API}/api/extractoCajaBanco/subcategorias/dre`,
+            {
+                sucursal_id: filtros.sucursal_id ?? null,
+                moneda_id: filtros.moneda_id,
+                anio: filtros.anio,
+            },
+            { headers: { Authorization: `Bearer ${token}` }, responseType: "blob" }
+        );
+        return result.data;
+    } catch (error) {
+        console.error("Error al generar DRE mensual:", error);
+        throw error;
+    }
+};
+
 export const registrarAsientos = async (
     token: string,
     asientos: AsientoNuevo[]

@@ -14,13 +14,13 @@ import { showAlert } from "../../../components/utils/Procesando";
 import type { FiltrosInformeSubcategorias } from "../services/extractoCategoriaService";
 
 const ExtractoRaiz = () => {
-    const { generarInformeSubcategorias, loading } = useExtractoCategoria();
+    const { generarInformeSubcategorias, generarInformeDRE, loading } = useExtractoCategoria();
     const { cajas, cargarCajas, cargarCajaPorId } = useCajas();
     const { caja } = useCaja();
     const { cuentas, cargarCuentas, cargarCuentaPorId } = useCuentas();
     const { monedasA, cargarMonedasActivas } = useMoneda();
 
-    const cajasAbiertas = cajas.filter(e => e.estado === "Abierta");
+    const cajasAbiertas = cajas;
     const cuentasActivas = cuentas.filter(e => e.activo);
 
     useEffect(() => {
@@ -48,6 +48,16 @@ const ExtractoRaiz = () => {
         }
     };
 
+    const handleGenerarDRE = async (anio: number, moneda_id: number | null) => {
+        if (!moneda_id) return;
+        try {
+            await generarInformeDRE({ sucursal_id: null, moneda_id, anio });
+        } catch (error) {
+            console.error(error);
+            showAlert("No se pudo generar el DRE", "error");
+        }
+    };
+
     return (
         <>
             {loading && <Loading />}
@@ -66,6 +76,7 @@ const ExtractoRaiz = () => {
                         datosMonedas={monedasA}
                         cajaLogueada={caja}
                         onGenerarInforme={handleGenerarInforme}
+                        onGenerarDRE={handleGenerarDRE}
                     />
                 }
             />
